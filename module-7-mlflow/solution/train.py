@@ -156,7 +156,7 @@ def main():
         logging_steps=1,
         max_steps=tr.get("max_steps", -1),
         # Disable built-in integrations
-        # we log via our own callback.
+        # We log via our own callback.
         report_to="none",
     )
 

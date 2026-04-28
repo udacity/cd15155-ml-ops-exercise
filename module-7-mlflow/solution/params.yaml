@@ -6,7 +6,7 @@ dataset:
   name: baptle/financial_headlines_market_based
   text_column: "Title"
   label_column: "Global Sentiment"
-  num_samples: 300
+  num_samples: 400
   val_split: 0.2
   seed: 42
 

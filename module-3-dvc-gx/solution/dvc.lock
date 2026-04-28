@@ -1,0 +1,111 @@
+schema: '2.0'
+stages:
+  ingest:
+    cmd: python src/ingest.py
+    deps:
+    - path: data/source/sales_data.csv
+      hash: md5
+      md5: a53cf325d22d37b8b21dece547fb3452
+      size: 20552
+    - path: src/ingest.py
+      hash: md5
+      md5: 2a20baa4ac5997e88b48621dc5458bec
+      size: 988
+    params:
+      params.yaml:
+        ingest:
+          test_size: 0.2
+          random_state: 42
+        paths.raw_test: data/raw/test.csv
+        paths.raw_train: data/raw/train.csv
+        paths.source: data/source/sales_data.csv
+    outs:
+    - path: data/raw/test.csv
+      hash: md5
+      md5: a5714148cd69474b3549f0c3498e3299
+      size: 4107
+    - path: data/raw/train.csv
+      hash: md5
+      md5: dc94e550f27a6d5f7eac53cf5ee5aaab
+      size: 16269
+  preprocess:
+    cmd: python src/preprocess.py
+    deps:
+    - path: data/raw/test.csv
+      hash: md5
+      md5: a5714148cd69474b3549f0c3498e3299
+      size: 4107
+    - path: data/raw/train.csv
+      hash: md5
+      md5: dc94e550f27a6d5f7eac53cf5ee5aaab
+      size: 16269
+    - path: src/preprocess.py
+      hash: md5
+      md5: 0783d2c8e4331c3592217861586f5716
+      size: 2669
+    params:
+      params.yaml:
+        paths.processed_test: data/processed/test_clean.csv
+        paths.processed_train: data/processed/train_clean.csv
+        paths.raw_test: data/raw/test.csv
+        paths.raw_train: data/raw/train.csv
+        preprocessing:
+          categorical_columns:
+          - Product
+          - Purchase Type
+          - Payment Method
+          - City
+          drop_columns:
+          - Manager
+    outs:
+    - path: data/processed/test_clean.csv
+      hash: md5
+      md5: 86c1d01975709deaf103257b37ab1c80
+      size: 2235
+    - path: data/processed/train_clean.csv
+      hash: md5
+      md5: 3639ee629eec72a4609c035587ab22b6
+      size: 8614
+  validate:
+    cmd: python src/validate.py
+    deps:
+    - path: data/processed/train_clean.csv
+      hash: md5
+      md5: 3639ee629eec72a4609c035587ab22b6
+      size: 8614
+    - path: src/validate.py
+      hash: md5
+      md5: 8a20ebcc880c39595ad520528783df89
+      size: 3360
+    params:
+      params.yaml:
+        paths.processed_train: data/processed/train_clean.csv
+        paths.report: reports/validation_result.json
+        validation:
+          expected_columns:
+          - Order ID
+          - Date
+          - Product
+          - Price
+          - Quantity
+          - Purchase Type
+          - Payment Method
+          - City
+          - month
+          - day_of_week
+          non_null_columns:
+          - Price
+          - Quantity
+          - Product
+          value_ranges:
+            Price:
+              min: 1.0
+              max: 50.0
+            Quantity:
+              min: 100.0
+              max: 1000.0
+    outs:
+    - path: reports/validation_result.json
+      hash: md5
+      md5: 590a9140f368457a99d33a3358f0818b
+      size: 2448

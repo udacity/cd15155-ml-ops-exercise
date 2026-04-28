@@ -9,7 +9,7 @@ import yaml
 from datasets import load_dataset
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
-from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
 def load_params():
@@ -26,13 +26,17 @@ def load_data(params):
     dataset = dataset.shuffle(seed=cfg["seed"]).select(range(cfg["num_samples"]))
 
     raw_labels = dataset[cfg["label_column"]]
-    if isinstance(raw_labels[0], str):
-        label2id = {l: i for i, l in enumerate(sorted(set(raw_labels)))}
-        dataset = dataset.map(lambda ex: {"label": label2id[ex[cfg["label_column"]]]})
+    # Dataset uses -1/0/1; model expects 0/1/2 (negative/neutral/positive).
+    unique_labels = sorted(set(raw_labels))
+    label2id = {l: i for i, l in enumerate(unique_labels)}
+    num_labels = len(unique_labels)
+    dataset = dataset.map(
+        lambda ex: {cfg["label_column"]: label2id[ex[cfg["label_column"]]]}
+    )
 
-    def tokenize(example):
+    def tokenize(batch):
         return tokenizer(
-            example[cfg["text_column"]],
+            batch[cfg["text_column"]],
             truncation=True,
             padding="max_length",
             max_length=params["model"]["max_length"],
@@ -40,10 +44,14 @@ def load_data(params):
 
     dataset = dataset.map(tokenize, batched=True)
     dataset = dataset.rename_column(cfg["label_column"], "labels")
+
+    # Drop all unnecessary columns
+    keep = ["input_ids", "attention_mask", "labels"]
+    dataset = dataset.remove_columns([c for c in dataset.column_names if c not in keep])
     dataset.set_format("torch")
 
     split = dataset.train_test_split(test_size=cfg["val_split"], seed=cfg["seed"])
-    return split["train"], split["test"]
+    return split["train"], split["test"], num_labels
 
 
 def train_epoch(model, loader, optimizer, device, max_steps):
@@ -52,6 +60,7 @@ def train_epoch(model, loader, optimizer, device, max_steps):
     for batch in loader:
         if max_steps > 0 and steps >= max_steps:
             break
+
         batch = {k: v.to(device) for k, v in batch.items()}
         loss = model(**batch).loss
         loss.backward()
@@ -82,12 +91,11 @@ def main():
     print(f"Device: {device}")
 
     print("Loading and tokenizing dataset...")
-    train_ds, val_ds = load_data(params)
+    train_ds, val_ds, num_labels = load_data(params)
     train_loader = DataLoader(train_ds, batch_size=tr["batch_size"], shuffle=True)
     val_loader = DataLoader(val_ds, batch_size=tr["batch_size"])
 
     print("Loading model...")
-    num_labels = AutoConfig.from_pretrained(params["model"]["name"]).num_labels
     model = AutoModelForSequenceClassification.from_pretrained(
         params["model"]["name"],
         num_labels=num_labels,
@@ -96,13 +104,11 @@ def main():
 
     optimizer = AdamW(model.parameters(), lr=tr["learning_rate"])
 
-    # Point MLflow at the local tracking server started with `mlflow ui`.
     mlflow.set_tracking_uri(mf["tracking_uri"])
     mlflow.set_experiment(mf["experiment_name"])
 
     with mlflow.start_run():
         # Log all hyperparameters once at the start of the run.
-        # These appear in the MLflow UI under the "Parameters" tab.
         mlflow.log_params(
             {
                 "learning_rate": tr["learning_rate"],
@@ -114,8 +120,7 @@ def main():
             }
         )
 
-        # Tags are free-form key-value pairs — useful for filtering runs
-        # in the UI (e.g. find all runs tagged stage=dev).
+        # Add tags for filtering
         for key, value in mf["tags"].items():
             mlflow.set_tag(key, value)
 
@@ -124,18 +129,18 @@ def main():
             loss = train_epoch(model, train_loader, optimizer, device, tr["max_steps"])
             acc = evaluate(model, val_loader, device)
 
-            # Log a metric at each epoch. The `step` argument is what
-            # produces the x-axis in the MLflow metrics chart.
+            # Log metrics at each epoch.
             mlflow.log_metric("train_loss", loss, step=epoch)
             mlflow.log_metric("val_accuracy", acc, step=epoch)
 
             print(
                 f"Epoch {epoch + 1}/{tr['num_epochs']}  loss={loss:.4f}  val_acc={acc:.4f}"
             )
+        print("Training complete.")
 
-        # Save the trained model as an MLflow artifact linked to this run.
-        # This is what enables model registry and deployment later.
-        mlflow.pytorch.log_model(model, mf["model_artifact_name"])
+        # Save the trained model as an MLflow artifact
+        # This takes some time
+        mlflow.pytorch.log_model(model, name=mf["model_artifact_name"])
         print(f"Run complete. Model logged as artifact '{mf['model_artifact_name']}'.")
 
 

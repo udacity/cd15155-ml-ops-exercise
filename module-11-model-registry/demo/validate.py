@@ -33,7 +33,7 @@ def main():
         prod_accuracy, prod_version = get_accuracy(client, model_name, "production")
     except Exception:
         print(f"@dev     : v{dev_version}  accuracy={dev_accuracy:.4f}")
-        print("No @production alias found — dev version will be promoted.")
+        print("No @production alias found. dev version will be promoted.")
         return True
 
     print(f"@dev        : v{dev_version}  accuracy={dev_accuracy:.4f}")

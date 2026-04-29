@@ -10,7 +10,7 @@ from datasets import load_dataset
 from mlflow.tracking import MlflowClient
 from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
-from transformers import AutoFeatureExtractor, AutoModelForImageClassification
+from transformers import AutoImageProcessor, AutoModelForImageClassification
 
 
 def load_params():
@@ -44,7 +44,7 @@ def load_data(params):
 
     dataset = dataset.shuffle(seed=cfg["seed"]).select(range(cfg["num_samples"]))
 
-    feature_extractor = AutoFeatureExtractor.from_pretrained(params["model"]["name"])
+    feature_extractor = AutoImageProcessor.from_pretrained(params["model"]["name"])
     split = int(len(dataset) * (1 - cfg["val_split"]))
     train_ds = FoodDataset(list(dataset.select(range(split))), feature_extractor)
     val_ds = FoodDataset(
@@ -144,8 +144,12 @@ def main():
 
         print("Logging and registering model...")
         mlflow.transformers.log_model(
-            transformers_model={"model": model, "feature_extractor": feature_extractor},
+            transformers_model={
+                "model": model.to("cpu"),
+                "image_processor": feature_extractor,
+            },
             artifact_path=mf["model_artifact_name"],
+            task="image-classification",
         )
         model_name = params["registry"]["model_name"]
         model_uri = f"runs:/{run.info.run_id}/{mf['model_artifact_name']}"

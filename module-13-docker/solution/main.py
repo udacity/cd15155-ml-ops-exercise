@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
     # TODO: Load the model from MLflow Model Registry
 
     print("Loading model from MLflow Registry...")
-    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000")
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://host.docker.internal:5000")
     mlflow.set_tracking_uri(tracking_uri)
     model_name = os.getenv("MLFLOW_MODEL_NAME", "beans-disease-classifier")
     model_alias = os.getenv("MLFLOW_MODEL_ALIAS", "production")
@@ -48,7 +48,7 @@ class PredictionResponse(BaseModel):
 @app.get("/health")
 def health_check():
     # Check if the model object exists and is functional
-    if models["vit_model"] is not None:
+    if models.get("vit_model") is not None:
         return {"status": "healthy", "model_loaded": True}
     return {"status": "unhealthy"}, 503
 
@@ -66,6 +66,6 @@ async def predict(file: UploadFile = File(...)):
     request_object_content = await file.read()
     image = Image.open(io.BytesIO(request_object_content)).convert("RGB")
 
-    prediction = models["vit_model"].predict(image)
+    prediction = models["vit_model"](image)
 
     return {"label": prediction[0]["label"], "score": prediction[0]["score"]}

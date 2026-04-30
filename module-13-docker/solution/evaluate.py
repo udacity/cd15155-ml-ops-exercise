@@ -8,6 +8,7 @@ Usage:
 import mlflow
 import yaml
 from datasets import load_dataset
+from mlflow.tracking import MlflowClient
 from transformers import pipeline
 
 
@@ -68,8 +69,6 @@ def main():
         )
 
         # TODO promot model to production if accuracy >90%
-        from mlflow.tracking import MlflowClient
-
         threshold = params["registry"]["threshold"]
         if accuracy > threshold:
             print(f"Accuracy {accuracy:.2%} is above {threshold:.0%}. Promoting...")

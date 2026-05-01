@@ -13,14 +13,6 @@ class TextRequest(BaseModel):
     text: str
 
 
-@app.get("/health")
-def health_check():
-    # Check if the model object exists and is functional
-    if classifier is not None:
-        return {"status": "healthy", "model_loaded": True}
-    return {"status": "unhealthy"}, 503
-
-
 @app.post("/predict")
 async def predict(request: TextRequest):
     if not request.text.strip():

@@ -1,0 +1,50 @@
+name: Deploy and Verify
+
+on:
+  push:
+    branches: 
+    - main
+    - content
+
+env:
+  ECR_REPOSITORY: ner-api
+  TASK_DEFINITION: ner-api
+  CONTAINER_NAME: ner-api
+  ECS_SERVICE: ner-api-service
+  ECS_CLUSTER: ner-api-cluster
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.TASK_DEFINITION }} \
+            --query taskDefinition > task-definition.json
+
+      - name: Render ECS task definition with latest image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ secrets.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+

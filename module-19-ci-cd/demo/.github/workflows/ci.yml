@@ -2,7 +2,9 @@ name: Deploy and Verify
 
 on:
   push:
-    branches: [content]
+    branches: 
+    - main
+    - content
 
 env:
   ECR_REPOSITORY: ner-api

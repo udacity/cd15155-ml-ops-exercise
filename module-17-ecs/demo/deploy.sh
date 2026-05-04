@@ -1,6 +1,7 @@
-# Build and push Docker image to ECR
+#!/bin/bash
+# Deploy NER API to AWS ECS
 
-# AWS credentials — paste from AWS Academy > AWS Details > AWS CLI
+# AWS credentials
 export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
 export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
 export AWS_SESSION_TOKEN="<YOUR_SESSION_TOKEN>"
@@ -28,10 +29,22 @@ docker push \
 # Create ECS cluster
 aws ecs create-cluster --cluster-name ner-api-cluster --region $AWS_REGION
 
+# Create task execution role
+aws iam create-role \
+  --role-name ecsTaskExecutionRole \
+  --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"ecs-tasks.amazonaws.com"},"Action":"sts:AssumeRole"}]}'
+
+aws iam attach-role-policy \
+  --role-name ecsTaskExecutionRole \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
 # Register task definition
 aws ecs register-task-definition \
   --cli-input-json file://task-definition.json \
   --region $AWS_REGION
+
+# Create CloudWatch log group
+aws logs create-log-group --log-group-name /ecs/ner-api --region $AWS_REGION
 
 # Get default VPC and subnet
 VPC_ID=$(aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" \
@@ -54,43 +67,31 @@ if [ "$SG_ID" = "None" ]; then
     --query GroupId --output text)
   aws ec2 authorize-security-group-ingress \
     --group-id $SG_ID \
-    --protocol tcp \
-    --port 8000 \
-    --cidr 0.0.0.0/0
+    --protocol tcp --port 8000 --cidr 0.0.0.0/0
 fi
 
 echo "Using SG: $SG_ID  Subnet: $SUBNET_ID"
 
-# Create ECS service
-aws ecs create-service \
-  --cluster ner-api-cluster \
-  --service-name ner-api-service \
-  --task-definition ner-api \
-  --desired-count 1 \
-  --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={
-    subnets=[$SUBNET_ID],
-    securityGroups=[$SG_ID],
-    assignPublicIp=ENABLED
-  }" \
-  --region $AWS_REGION
+# Create or update ECS service
+SERVICE_STATUS=$(aws ecs describe-services \
+  --cluster ner-api-cluster --services ner-api-service \
+  --query "services[0].status" --output text --region $AWS_REGION)
 
-# Get public IP and verify endpoint
-TASK_ARN=$(aws ecs list-tasks --cluster ner-api-cluster \
-  --service-name ner-api-service --query taskArns[0] --output text)
+if [ "$SERVICE_STATUS" = "ACTIVE" ]; then
+  aws ecs update-service \
+    --cluster ner-api-cluster \
+    --service ner-api-service \
+    --task-definition ner-api \
+    --region $AWS_REGION
+else
+  aws ecs create-service \
+    --cluster ner-api-cluster \
+    --service-name ner-api-service \
+    --task-definition ner-api \
+    --desired-count 1 \
+    --launch-type FARGATE \
+    --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SG_ID],assignPublicIp=ENABLED}" \
+    --region $AWS_REGION
+fi
 
-ENI_ID=$(aws ecs describe-tasks --cluster ner-api-cluster \
-  --tasks $TASK_ARN \
-  --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
-  --output text)
-
-PUBLIC_IP=$(aws ec2 describe-network-interfaces \
-  --network-interface-ids $ENI_ID \
-  --query 'NetworkInterfaces[0].Association.PublicIp' \
-  --output text)
-
-echo "Service running at: http://$PUBLIC_IP:8000"
-
-curl -X POST http://$PUBLIC_IP:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Apple is headquartered in Cupertino."}'
+echo "Deployment complete. Run test.sh to verify the endpoint."

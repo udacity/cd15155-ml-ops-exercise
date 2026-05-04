@@ -1,12 +1,10 @@
+import spacy
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from transformers import pipeline
 
 app = FastAPI()
 
-# Load the model
-MODEL_NAME = "elastic/distilbert-base-cased-finetuned-conll03-english"
-classifier = pipeline("ner", model=MODEL_NAME, aggregation_strategy="simple")
+nlp = spacy.load("en_core_web_sm")
 
 
 class TextRequest(BaseModel):
@@ -18,27 +16,16 @@ async def predict(request: TextRequest):
     if not request.text.strip():
         raise HTTPException(status_code=400, detail="Text cannot be empty")
 
-    # Run NER inference
-    entities = classifier(request.text)
+    doc = nlp(request.text)
 
-    # Transformers returns objects that aren't always JSON-serializable
-    # (like numpy floats), so we clean them up
-    results = []
-    for entity in entities:
-        results.append(
-            {
-                "entity_group": entity["entity_group"],
-                "score": float(entity["score"]),
-                "word": entity["word"],
-                "start": entity["start"],
-                "end": entity["end"],
-            }
-        )
-
-    return {"entities": results}
+    return {
+        "entities": [
+            {"word": ent.text, "entity_group": ent.label_, "start": ent.start_char, "end": ent.end_char}
+            for ent in doc.ents
+        ]
+    }
 
 
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/health")
+def health():
+    return {"status": "healthy"}

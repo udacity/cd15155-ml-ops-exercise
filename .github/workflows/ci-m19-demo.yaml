@@ -1,4 +1,4 @@
-name: Deploy and Verify
+name: Build & Deploy
 
 on:
   push:

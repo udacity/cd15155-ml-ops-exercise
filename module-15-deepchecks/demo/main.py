@@ -161,8 +161,9 @@ def main():
         y_proba_test=test_proba,
     )
 
-    result.save_as_html("report.html")
-    print("\nReport saved to report.html")
+    with open("report.json", "w") as f:
+        f.write(result.to_json())
+    print("\nReport saved to report.json")
 
     print("\nChecks summary:")
     for check_result in result.results:

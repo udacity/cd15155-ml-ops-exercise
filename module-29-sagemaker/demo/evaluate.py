@@ -1,28 +1,27 @@
 """
-Evaluation script for SageMaker Processing.
+Evaluation script — runs on SageMaker Processing or locally.
 
-Inputs (injected by SageMaker):
-  /opt/ml/processing/model  — trained model artifact (model.tar.gz)
-  /opt/ml/processing/test   — test.json from preprocessing step
-
-Output:
-  /opt/ml/processing/evaluation/evaluation.json
+Local usage:
+    python evaluate.py --model-dir /tmp/finbert-model \
+                       --test-dir processing/output/test \
+                       --output-dir /tmp/eval-output
 """
 
-import subprocess
-import sys
-
-subprocess.run([
-    sys.executable, "-m", "pip", "install",
-    "numpy>=1.24.0,<2.0.0",
-    "pyarrow>=14.0.0,<16.0.0",
-    "transformers>=4.26.0,<5.0.0",
-    "datasets>=2.14.0,<3.0.0",
-], check=True)
-
+import argparse
 import json
 import os
+import subprocess
+import sys
 import tarfile
+
+if os.path.exists("/opt/ml/processing"):
+    subprocess.run([
+        sys.executable, "-m", "pip", "install",
+        "numpy>=1.24.0,<2.0.0",
+        "pyarrow>=14.0.0,<16.0.0",
+        "transformers>=4.26.0,<5.0.0",
+        "datasets>=2.14.0,<3.0.0",
+    ], check=True)
 
 import pandas as pd
 import torch
@@ -30,14 +29,22 @@ from datasets import Dataset
 from sklearn.metrics import accuracy_score, classification_report
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-model_input_dir = "/opt/ml/processing/model"
-test_path       = "/opt/ml/processing/test"
-output_dir      = "/opt/ml/processing/evaluation"
+parser = argparse.ArgumentParser()
+parser.add_argument("--model-dir",  default=os.environ.get("SM_MODEL_DIR", "/tmp/finbert-model"))
+parser.add_argument("--test-dir",   default="processing/output")
+parser.add_argument("--output-dir", default="/tmp/eval-output")
+args = parser.parse_args()
 
-print("Extracting model artifact...")
+model_input_dir = args.model_dir
+test_path       = args.test_dir
+output_dir      = args.output_dir
+
+# Extract model.tar.gz if present (SageMaker delivers it this way)
 tar_path = os.path.join(model_input_dir, "model.tar.gz")
-with tarfile.open(tar_path, "r:gz") as tar:
-    tar.extractall(model_input_dir)
+if os.path.exists(tar_path):
+    print("Extracting model artifact...")
+    with tarfile.open(tar_path, "r:gz") as tar:
+        tar.extractall(model_input_dir)
 
 print("Loading model and tokenizer...")
 model     = AutoModelForSequenceClassification.from_pretrained(model_input_dir)

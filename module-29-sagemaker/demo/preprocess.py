@@ -1,30 +1,32 @@
 """
-Preprocessing script for SageMaker Processing.
+Preprocessing script — runs on SageMaker Processing or locally.
 
-Downloads the financial headlines dataset from HuggingFace, encodes labels
-(Global Sentiment -1/0/1 → 0/1/2), and splits into train / valid / test JSON files.
+Local usage:
+    python preprocess.py --output-dir processing/output
 
-Output paths (SageMaker Processing output):
-  /opt/ml/processing/output/train/train.json
-  /opt/ml/processing/output/valid/valid.json
-  /opt/ml/processing/output/test/test.json
+SageMaker injects paths automatically via /opt/ml/processing/.
 """
 
+import argparse
+import os
 import subprocess
 import sys
 
-subprocess.run([
-    sys.executable, "-m", "pip", "install",
-    "numpy>=1.24.0,<2.0.0",
-    "pyarrow>=14.0.0,<16.0.0",
-    "datasets>=2.14.0,<3.0.0",
-], check=True)
-
-import os
+if os.path.exists("/opt/ml/processing"):
+    subprocess.run([
+        sys.executable, "-m", "pip", "install",
+        "numpy>=1.24.0,<2.0.0",
+        "pyarrow>=14.0.0,<16.0.0",
+        "datasets>=2.14.0,<3.0.0",
+    ], check=True)
 
 from datasets import load_dataset
 
-OUTPUT_BASE = "/opt/ml/processing/output"
+parser = argparse.ArgumentParser()
+parser.add_argument("--output-dir", default=os.environ.get("SM_OUTPUT_DIR", "processing/output"))
+args = parser.parse_args()
+
+OUTPUT_BASE = args.output_dir
 
 print("Downloading dataset: baptle/financial_headlines_market_based...")
 dataset = load_dataset("baptle/financial_headlines_market_based", split="train")
@@ -41,7 +43,7 @@ dataset = dataset.map(encode).remove_columns(["Global Sentiment"])
 print(f"Total samples: {len(dataset)}  |  Classes: {label2id}")
 
 # 80 / 10 / 10 split
-train_test  = dataset.train_test_split(test_size=0.2, seed=42)
+train_test = dataset.train_test_split(test_size=0.2, seed=42)
 valid_test  = train_test["test"].train_test_split(test_size=0.5, seed=42)
 
 splits = {
@@ -54,6 +56,6 @@ for name, split in splits.items():
     out_dir = os.path.join(OUTPUT_BASE, name)
     os.makedirs(out_dir, exist_ok=True)
     split.to_json(os.path.join(out_dir, f"{name}.json"))
-    print(f"Saved {name}: {len(split)} rows → {out_dir}/{name}.json")
+    print(f"Saved {name}: {len(split)} rows to {out_dir}/{name}.json")
 
 print("Preprocessing complete.")

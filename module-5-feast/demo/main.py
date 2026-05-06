@@ -18,14 +18,16 @@ def main():
 
     # Entity dataframe: cardholder IDs, the timestamp of each label event,
     # and a fraud label. Feast will join features available BEFORE each timestamp.
+    from datetime import timedelta
+    now = datetime.now(tz=timezone.utc)
     entity_df = pd.DataFrame({
         "cardholder_id": [1, 2, 3, 4, 5],
         "event_timestamp": [
-            datetime(2024, 1, 10, tzinfo=timezone.utc),
-            datetime(2024, 1, 16, tzinfo=timezone.utc),
-            datetime(2024, 1, 22, tzinfo=timezone.utc),
-            datetime(2024, 1, 28, tzinfo=timezone.utc),
-            datetime(2024, 2,  3, tzinfo=timezone.utc),
+            now - timedelta(days=20),
+            now - timedelta(days=16),
+            now - timedelta(days=12),
+            now - timedelta(days=8),
+            now - timedelta(days=4),
         ],
         "is_fraud": [0, 1, 0, 1, 0],
     })

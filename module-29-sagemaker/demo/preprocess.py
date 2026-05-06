@@ -13,10 +13,12 @@ Output paths (SageMaker Processing output):
 import subprocess
 import sys
 
-subprocess.run(
-    [sys.executable, "-m", "pip", "install", "datasets>=2.14.0"],
-    check=True,
-)
+subprocess.run([
+    sys.executable, "-m", "pip", "install",
+    "numpy>=1.24.0,<2.0.0",
+    "pyarrow>=14.0.0,<16.0.0",
+    "datasets>=2.14.0,<3.0.0",
+], check=True)
 
 import os
 

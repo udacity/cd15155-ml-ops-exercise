@@ -12,10 +12,13 @@ Output:
 import subprocess
 import sys
 
-subprocess.run(
-    [sys.executable, "-m", "pip", "install", "transformers>=4.26.0", "datasets>=2.14.0"],
-    check=True,
-)
+subprocess.run([
+    sys.executable, "-m", "pip", "install",
+    "numpy>=1.24.0,<2.0.0",
+    "pyarrow>=14.0.0,<16.0.0",
+    "transformers>=4.26.0,<5.0.0",
+    "datasets>=2.14.0,<3.0.0",
+], check=True)
 
 import json
 import os

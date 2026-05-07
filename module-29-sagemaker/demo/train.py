@@ -1,9 +1,8 @@
 """
-Training script for SageMaker HuggingFace estimator.
+Training script for SageMaker
 
 Dataset : baptle/financial_headlines_market_based (preprocessed by preprocess.py)
 Model   : baptle/FinBERT_market_based
-Task    : Financial headline sentiment classification (3 classes)
 
 SageMaker injects:
   SM_CHANNEL_TRAIN  — path to train.json

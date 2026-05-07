@@ -1,6 +1,5 @@
 """
-Preprocessing script — runs on SageMaker Processing or locally.
-
+Preprocessing script 
 Local usage:
     python preprocess.py --output-dir processing/output
 

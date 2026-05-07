@@ -121,11 +121,12 @@ def get_pipeline(role: str, bucket: str, session: PipelineSession, region: str) 
     print("Configuring evaluation step...")
     evaluator = ScriptProcessor(
         image_uri=image_uris.retrieve(
-            framework="pytorch",
+            framework="huggingface",
             region=region,
-            version="2.0.0",
-            py_version="py310",
-            image_scope="training",
+            version="4.26.0",
+            py_version="py39",
+            base_framework_version="pytorch1.13.1",
+            image_scope="inference",
             instance_type="ml.m5.large",
         ),
         command=["python3"],

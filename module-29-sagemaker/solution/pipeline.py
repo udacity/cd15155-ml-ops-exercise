@@ -35,9 +35,9 @@ from sagemaker.mlops.workflow.steps import ProcessingStep, TrainingStep
 from sagemaker.serve.model_builder import ModelBuilder
 from sagemaker.train import ModelTrainer
 from sagemaker.train.configs import Compute, InputData, SourceCode
-from sagemaker.workflow.conditions import ConditionGreaterThanOrEqualTo
-from sagemaker.workflow.functions import JsonGet
-from sagemaker.workflow.properties import PropertyFile
+from sagemaker.core.workflow.conditions import ConditionGreaterThanOrEqualTo
+from sagemaker.core.workflow.functions import JsonGet
+from sagemaker.core.workflow.properties import PropertyFile
 
 MODEL_PACKAGE_GROUP = "FinBERTSentimentClassifiers"
 
@@ -139,11 +139,12 @@ def get_pipeline(role: str, bucket: str, session: PipelineSession, region: str) 
     print("Configuring evaluation step...")
     evaluator = ScriptProcessor(
         image_uri=image_uris.retrieve(
-            framework="pytorch",
+            framework="huggingface",
             region=region,
-            version="2.0.0",
-            py_version="py310",
-            image_scope="training",
+            version="4.26.0",
+            py_version="py39",
+            base_framework_version="pytorch1.13.1",
+            image_scope="inference",
             instance_type="ml.m5.large",
         ),
         command=["python3"],
@@ -222,6 +223,11 @@ def get_pipeline(role: str, bucket: str, session: PipelineSession, region: str) 
         role_arn=role,
     )
 
+    create_step = ModelStep(
+        name="CreateModel",
+        step_args=model_builder.build(),
+    )
+
     # TODO: Add a RegisterModel step that registers to the Model Registry
     register_step = ModelStep(
         name="RegisterModel",
@@ -247,7 +253,7 @@ def get_pipeline(role: str, bucket: str, session: PipelineSession, region: str) 
                 right=ACCURACY_THRESHOLD,
             )
         ],
-        if_steps=[register_step],
+        if_steps=[create_step, register_step],
         else_steps=[],
     )
 

@@ -32,9 +32,10 @@ from sklearn.metrics import accuracy_score, classification_report
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model-dir",  default=os.environ.get("SM_MODEL_DIR", "/tmp/finbert-model"))
-parser.add_argument("--test-dir",   default="processing/output/test")
-parser.add_argument("--output-dir", default="/tmp/eval-output")
+_in_sm = os.path.exists("/opt/ml/processing")
+parser.add_argument("--model-dir",  default="/opt/ml/processing/model"      if _in_sm else os.environ.get("SM_MODEL_DIR", "/tmp/finbert-model"))
+parser.add_argument("--test-dir",   default="/opt/ml/processing/test"       if _in_sm else "processing/output/test")
+parser.add_argument("--output-dir", default="/opt/ml/processing/evaluation" if _in_sm else "/tmp/eval-output")
 args = parser.parse_args()
 
 model_input_dir = args.model_dir

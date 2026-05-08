@@ -1,0 +1,42 @@
+stages:
+  ingest:
+    cmd: python src/ingest.py
+    deps:
+      - src/ingest.py
+      - data/source/sales_data.csv
+    params:
+      - ingest
+      - paths.source
+      - paths.raw_train
+      - paths.raw_test
+    outs:
+      - data/raw/train.csv
+      - data/raw/test.csv
+
+  preprocess:
+    cmd: python src/preprocess.py
+    deps:
+      - src/preprocess.py
+      - data/raw/train.csv
+      - data/raw/test.csv
+    params:
+      - paths.raw_train
+      - paths.raw_test
+      - paths.processed_train
+      - paths.processed_test
+      - preprocessing
+    outs:
+      - data/processed/train_clean.csv
+      - data/processed/test_clean.csv
+
+  validate:
+    cmd: python src/validate.py
+    deps:
+      - src/validate.py
+      - data/processed/train_clean.csv
+    params:
+      - paths.processed_train
+      - paths.report
+      - validation
+    outs:
+      - reports/validation_result.json

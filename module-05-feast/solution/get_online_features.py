@@ -20,8 +20,10 @@ FEATURES = [
 if __name__ == "__main__":
     store = FeatureStore(repo_path=".")
 
-    # TODO: Call store.get_online_features() with the feature list and a single
-    # entity row for CARDHOLDER_ID, then convert the result to a dict
+    # TODO: Retrieve online features for the specified cardholder_id and features list
+    # measure the latency of the online feature retrieval
+    # Read more: https://docs.feast.dev/master/getting-started/concepts/feature-retrieval
+    
     print(f"Retrieving online features for cardholder_id={CARDHOLDER_ID}...")
     start = time.perf_counter()
     feature_vector = store.get_online_features(

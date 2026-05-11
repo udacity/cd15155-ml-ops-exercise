@@ -1,7 +1,5 @@
 """
 Generates a point-in-time correct training dataset using Feast.
-
-Run after: feast apply
 """
 
 from datetime import datetime, timezone
@@ -12,19 +10,27 @@ from feast import FeatureStore
 if __name__ == "__main__":
     store = FeatureStore(repo_path=".")
 
-    # TODO: Build an entity DataFrame with cardholder IDs, label timestamps,
-    # and fraud labels.
-    from datetime import datetime, timezone
+    # Show raw data before any feature engineering
+    raw_df = pd.read_parquet("data/transactions.parquet")
+    print("=== Raw Transactions Data ===")
+    print(f"Shape: {raw_df.shape}")
+    print(raw_df.head(5).to_string(index=False))
+
     now = datetime.now(tz=timezone.utc)
     entity_df = pd.DataFrame({
         "cardholder_id": list(range(1, 21)),
         "event_timestamp": [now] * 20,
         "is_fraud": [0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
     })
+    print("\n=== Entity DataFrame (query) ===")
+    print(f"Shape: {entity_df.shape}")
+    print(entity_df.head(5).to_string(index=False))
 
-    # TODO: Call store.get_historical_features() with the entity DataFrame and
-    # the list of features from both feature views, then convert to a DataFrame
-    print("Fetching historical features with point-in-time correctness...")
+    # TODO: Retrieve historical features with the entity DataFrame and
+    # the list of features from both feature views
+    # then convert to a DataFrame
+    # Read more: https://docs.feast.dev/getting-started/concepts/point-in-time-joins
+    print("\nFetching historical features with point-in-time correctness...")
     training_df = store.get_historical_features(
         entity_df=entity_df,
         features=[
@@ -36,8 +42,9 @@ if __name__ == "__main__":
         ],
     ).to_df()
 
-    print(f"\nTraining dataset shape: {training_df.shape}")
-    print(training_df.head(10).to_string(index=False))
+    print("\n=== Feature Dataset (after point-in-time join) ===")
+    print(f"Shape: {training_df.shape}")
+    print(training_df.head(5).to_string(index=False))
 
     # TODO: Save the training dataset to a parquet file
     training_df.to_parquet("data/training_dataset.parquet", index=False)

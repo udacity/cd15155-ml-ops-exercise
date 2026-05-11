@@ -27,7 +27,6 @@ for cardholder_id in range(1, NUM_CARDHOLDERS + 1):
             "average_spend": round(np.random.normal(loc=200, scale=80), 2),
             "days_since_last_transaction": days_since_last,
             "transaction_velocity": round(np.random.uniform(0.5, 10.0), 2),
-            "is_fraud": int(np.random.random() < 0.05),
         })
         last_ts = event_timestamp
 

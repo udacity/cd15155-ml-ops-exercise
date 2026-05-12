@@ -23,14 +23,12 @@ def load_params():
 @task(name="Train", log_prints=True)
 def train_model() -> str:
     import train
-
     return train.main()
 
 
 @task(name="Validate", log_prints=True)
 def validate_model() -> bool:
     import validate
-
     return validate.main()
 
 
@@ -51,7 +49,7 @@ def continuous_training_flow():
     if passed:
         save_model()
     else:
-        print("Model failed validation. Skipping.")
+        print("Model failed validation — not saved.")
 
 
 if __name__ == "__main__":

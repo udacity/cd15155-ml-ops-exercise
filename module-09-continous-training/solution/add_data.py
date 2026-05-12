@@ -1,6 +1,7 @@
 """
 Simulates a stream of new sales data arriving over time.
-Each call appends the next chunk and emits a Prefect event.
+
+Each subsequent call appends the next chunk and emits a Prefect event.
 
 Usage:
     python add_data.py            # 5 chunks by default
@@ -31,7 +32,6 @@ def load_and_prepare() -> pd.DataFrame:
     df["day_of_week"] = df["Date"].dt.dayofweek
 
     from sklearn.preprocessing import LabelEncoder
-
     le = LabelEncoder()
     for col in ["Product", "Purchase Type", "Payment Method", "City"]:
         df[col] = le.fit_transform(df[col])
@@ -60,7 +60,7 @@ def write_state(chunk_index: int) -> None:
 def setup_chunks(n_chunks: int) -> None:
     print("Loading and preparing sales_data.csv...")
     df = load_and_prepare()
-    print(f"Total samples: {len(df)} - columns: {list(df.columns)}")
+    print(f"Total samples: {len(df)} — columns: {list(df.columns)}")
 
     os.makedirs(CHUNKS_DIR, exist_ok=True)
     chunk_size = len(df) // n_chunks
@@ -68,16 +68,15 @@ def setup_chunks(n_chunks: int) -> None:
         start = i * chunk_size
         end = start + chunk_size if i < n_chunks - 1 else len(df)
         df.iloc[start:end].to_csv(f"{CHUNKS_DIR}/chunk_{i + 1}.csv", index=False)
-        print(f"  chunk_{i + 1}.csv : {end - start} rows")
+        print(f"  chunk_{i + 1}.csv — {end - start} rows")
 
 
 def emit_new_data_event() -> None:
     try:
         from prefect.events import emit_event
-
         emit_event(
             event="new-data-available",
-            resource={"prefect.resource.id": "training-data"},
+            resource={"prefect.resource.id": "sales-training-data"},
         )
         print("Prefect event 'new-data-available' emitted.")
     except Exception as exc:
@@ -112,9 +111,7 @@ def main():
     updated = pd.concat([existing, new_data], ignore_index=True)
     updated.to_csv(TRAIN_CSV, index=False)
     write_state(next_chunk)
-    print(
-        f"Added chunk_{next_chunk}. Train data now has {len(updated)} rows (was {len(existing)})."
-    )
+    print(f"Added chunk_{next_chunk} -> data/train.csv now has {len(updated)} rows (was {len(existing)}).")
     emit_new_data_event()
 
 

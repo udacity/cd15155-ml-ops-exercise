@@ -14,13 +14,14 @@ def load_params():
 
 
 def get_runs(client, experiment_name):
+    # TODO fetch all runs for the experiment,
+    # ordered by start_time (most recent first).
+    # Raise a RuntimeError if no runs are found.
+    # Return the list of runs.
     experiment = client.get_experiment_by_name(experiment_name)
     if experiment is None:
         raise RuntimeError(f"Experiment '{experiment_name}' not found.")
-    # TODO fetch all runs for this experiment,
-    # ordered by start_time DESC (most recent first).
-    # Raise a RuntimeError if no runs are found.
-    # Return the list of runs.
+
     runs = client.search_runs(
         experiment_ids=[experiment.experiment_id],
         order_by=["start_time DESC"],
@@ -47,7 +48,9 @@ def main():
         print("First run. Model promoted by default.")
         return True
 
-    # TODO Find the best val_accuracy across all previous runs
+    # TODO Find the best val_accuracy across all previous runs.
+    # Hint: use max() with a generator expression.
+    # Hint: Consider the case where there is only one run.    
     champion_accuracy = max(r.data.metrics["val_accuracy"] for r in runs[1:])
 
     print(f"Challenger accuracy : {challenger_accuracy:.4f}")

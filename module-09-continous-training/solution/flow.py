@@ -33,7 +33,6 @@ def validate_model() -> bool:
     return validate.main()
 
 
-# TODO Create a task that moves the model from candidate folder to model output
 @task(name="Save Model", log_prints=True)
 def save_model() -> None:
     params = load_params()
@@ -62,7 +61,7 @@ if __name__ == "__main__":
         triggers=[
             DeploymentEventTrigger(
                 enabled=True,
-                match={"prefect.resource.id": "training-data"},
+                match={"prefect.resource.id": "sales-training-data"},
                 expect=["new-data-available"],
             )
         ],

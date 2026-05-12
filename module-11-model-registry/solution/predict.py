@@ -40,7 +40,7 @@ def load_production_model(tracking_uri: str, model_name: str):
     return mlflow.transformers.load_model(model_uri)
 
 
-# TODO run inference using the production model
+# TODO run inference using the production model and return the predicted label
 def predict(model, image):
     """Runs inference on a single PIL image and returns the predicted label."""
     predictions = model(image)

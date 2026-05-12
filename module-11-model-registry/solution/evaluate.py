@@ -67,7 +67,7 @@ def main():
             registered_model_name=params["registry"]["model_name"],
         )
 
-        # TODO promot model to production if accuracy >90%
+        # TODO promote model to production if accuracy >90%
         from mlflow.tracking import MlflowClient
 
         threshold = params["registry"]["threshold"]

@@ -65,7 +65,7 @@ def main(image_path=None):
         sample = dataset[0]
         image = sample["image"]
         true_label = dataset.features["labels"].names[sample["labels"]]
-        print(f"Using sample image — true label: {true_label}")
+        print(f"Using sample image. True label: {true_label}")
     else:
         from PIL import Image
 

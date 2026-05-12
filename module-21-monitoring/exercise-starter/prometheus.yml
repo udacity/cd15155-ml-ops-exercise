@@ -1,0 +1,3 @@
+# TODO: Create a Prometheus configuration file that scrapes metrics 
+#from the FastAPI app's /metrics endpoint every 15 seconds
+

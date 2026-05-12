@@ -1,8 +1,8 @@
 """
 Validates the @dev model before promoting it to @production.
 
-Step 1 — Champion/challenger: compare @dev accuracy against @production.
-Step 2 — Quality gate: run a Deepchecks vision suite on the @dev model predictions.
+Step 1: Champion/challenger: compare @dev accuracy against @production.
+Step 2: Quality gate: run a Deepchecks vision suite on the @dev model predictions.
 
 Returns True only if both steps pass.
 """
@@ -62,9 +62,9 @@ class BeansDataset(TorchDataset):
         return self.dataset[idx]
 
 #TODO Create a collate function that will be use in the DataLoader
-# The collate function that transforms a batch into the format expected by Deepchecks
+# The collate function transforms a batch into the format expected by Deepchecks
 # The function takes a batch as input and returns a batch of images, labels and predictions for the batch
-# Read more here: https://docs.deepchecks.com/stable/vision/auto_tutorials/quickstarts/plot_classification_tutorial.html
+# Read more here: https://docs.deepchecks.com/stable/vision/auto_tutorials/quickstarts/plot_classification_tutorial.html#implementing-the-visiondata-class
 def make_collate_fn(pipe, label_names):
     """Returns a collate function that runs the pipeline and formats for Deepchecks."""
     def collate_fn(examples):
@@ -89,7 +89,7 @@ def make_collate_fn(pipe, label_names):
     return collate_fn
 
 #TODO Create a function that create a VisionData object
-# Use the collate function above to a dataloader in deepchecks format
+# Use the collate function above to create a dataloader in deepchecks format
 # and then use the dataloader to create a VisionData object that will be used in the Deepchecks suite
 def build_vision_data(hf_split, pipe, label_names, batch_size=8):
     dataset = BeansDataset(load_dataset("beans", split=hf_split))
@@ -101,11 +101,11 @@ def build_vision_data(hf_split, pipe, label_names, batch_size=8):
     )
     return VisionData(batch_loader=loader, task_type="classification", label_map=label_map)
 
-#TODO Implement model/data quality checks using Deepchecks
+#TODO Implement model quality checks using Deepchecks
 def run_quality_checks(pipe, label_names):
-    """Builds VisionData loaders, runs the Deepchecks suite, returns True if all checks pass."""
 
-
+    #TODO Build Deepchecks VisionData objects for the train and test sets using the build_vision_data function above
+    # Hint: https://docs.deepchecks.com/stable/vision/usage_guides/visiondata_object.html
     print("Building train VisionData...")
     train_data = build_vision_data("train", pipe, label_names)
 
@@ -115,27 +115,18 @@ def run_quality_checks(pipe, label_names):
 
     print("Running Deepchecks quality suite...")
     #TODO build deepcheck's train test validation suite and run it on the train/test vision datasets
+    #https://docs.deepchecks.com/stable/api/generated/deepchecks.vision.suites.train_test_validation.html#deepchecks.vision.suites.train_test_validation
     suite = train_test_validation()
     result = suite.run(train_data, test_data, max_samples=5000)
 
-    failed = []
-    print("\nChecks summary:")
+    #TODO Return False if the suite detects a label drift with a drift score > 0.5, otherwise return True
     for check_result in result.results:
-        if isinstance(check_result, CheckFailure):
-            print(f"  [ERROR] {check_result.check.name()}: {check_result.exception}")
-            continue
+        if not isinstance(check_result, CheckFailure) and check_result.check.name() == "Label Drift":
+            drift_score = check_result.value["Samples Per Class"]["Drift score"]
+            if drift_score > 0.5:
+                return False
 
-        check_name = check_result.check.name()
-        check_failed = any(not c.is_pass() for c in check_result.conditions_results)
-
-        if check_result.conditions_results:
-            print(f"  [{'PASS' if not check_failed else 'FAIL'}] {check_name}")
-            if check_failed:
-                failed.append(check_name)
-        else:
-            print(f"  [INFO] {check_name}")
-
-    return len(failed) == 0
+    return True
 
 
 def main():
@@ -162,4 +153,4 @@ def main():
 
 if __name__ == "__main__":
     passed = main()
-    print("\nValidation passed — ready to promote." if passed else "\nValidation FAILED — not promoting.")
+    print("\nValidation passed. Ready to promote." if passed else "\nValidation FAILED...Not promoting.")

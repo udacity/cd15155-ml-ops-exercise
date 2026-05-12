@@ -43,7 +43,7 @@ def promote_model() -> None:
     for key, value in reg["tags"].items():
         client.set_model_version_tag(reg["model_name"], dev.version, key, value)
 
-    # Promote @dev → @production
+    # Promote @dev to @production
     client.set_registered_model_alias(reg["model_name"], "production", dev.version)
     print(f"Version {dev.version} alias set to '@production'.")
 
@@ -55,7 +55,7 @@ def continuous_training_flow():
     if passed:
         promote_model()
     else:
-        print("Validation failed — model not promoted to production.")
+        print("Validation failed. Model not promoted to production.")
 
 
 if __name__ == "__main__":

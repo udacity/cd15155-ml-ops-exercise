@@ -1,10 +1,10 @@
 #!/bin/bash
 # Deploy Beans API to AWS ECS with Auto-scaling
 
-# AWS credentials — paste from AWS Academy > AWS Details > AWS CLI
-export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
-export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
-export AWS_SESSION_TOKEN="<YOUR_SESSION_TOKEN>"
+# AWS credentials
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
+export AWS_SESSION_TOKEN=""
 
 AWS_REGION=us-east-1
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)

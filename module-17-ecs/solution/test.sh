@@ -1,7 +1,7 @@
 #!/bin/bash
 # Verify the Beans API endpoint
 
-# AWS credentials — paste from AWS Academy > AWS Details > AWS CLI
+# AWS credentials
 export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
 export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
 export AWS_SESSION_TOKEN="<YOUR_SESSION_TOKEN>"

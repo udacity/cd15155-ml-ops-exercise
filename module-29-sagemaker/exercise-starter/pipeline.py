@@ -67,38 +67,7 @@ def get_pipeline(role: str, bucket: str, session: PipelineSession, region: str) 
     # Each output should upload to s3://{bucket}/finbert/processed/<split>
     # and map to /opt/ml/processing/output/<split> inside the container.
     # Hint: https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps-types.html#step-type-processing
-    preprocess_step = ProcessingStep(
-        name="PreprocessData",
-        step_args=preprocessor.run(
-            code="preprocess.py",
-            outputs=[
-                ProcessingOutput(
-                    output_name="train",
-                    s3_output=ProcessingS3Output(
-                        s3_uri=f"s3://{bucket}/finbert/processed/train",
-                        local_path="/opt/ml/processing/output/train",
-                        s3_upload_mode="EndOfJob",
-                    ),
-                ),
-                ProcessingOutput(
-                    output_name="valid",
-                    s3_output=ProcessingS3Output(
-                        s3_uri=f"s3://{bucket}/finbert/processed/valid",
-                        local_path="/opt/ml/processing/output/valid",
-                        s3_upload_mode="EndOfJob",
-                    ),
-                ),
-                ProcessingOutput(
-                    output_name="test",
-                    s3_output=ProcessingS3Output(
-                        s3_uri=f"s3://{bucket}/finbert/processed/test",
-                        local_path="/opt/ml/processing/output/test",
-                        s3_upload_mode="EndOfJob",
-                    ),
-                ),
-            ],
-        ),
-    )
+    preprocess_step = ProcessingStep()
 
     # Step 2: Train
     print("Configuring training step...")
@@ -116,25 +85,7 @@ def get_pipeline(role: str, bucket: str, session: PipelineSession, region: str) 
     # Use train.py as the entry script, ml.g4dn.xlarge as the instance type,
     # and pass the train output from preprocess_step as the input data channel.
     # Hint" https://github.com/aws/amazon-sagemaker-examples/blob/default/%20%20%20%20%20%20build_and_train_models/sm-model_trainer/model_trainer_overview.ipynb
-    model_trainer = ModelTrainer(
-        training_image=training_image,
-        source_code=SourceCode(source_dir=".", entry_script="train.py"),
-        compute=Compute(
-            instance_type="ml.g4dn.xlarge",
-            instance_count=1,
-        ),
-        base_job_name="finbert-train",
-        sagemaker_session=session,
-        role=role,
-        input_data_config=[
-            InputData(
-                channel_name="train",
-                data_source=preprocess_step.properties.ProcessingOutputConfig.Outputs[
-                    "train"
-                ].S3Output.S3Uri,
-            ),
-        ],
-    )
+    model_trainer = ModelTrainer()
 
     training_step = TrainingStep(
         name="TrainModel",
@@ -163,55 +114,13 @@ def get_pipeline(role: str, bucket: str, session: PipelineSession, region: str) 
 
     # TODO: Define a PropertyFile so the pipeline can read evaluation.json
     # Hint: https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-propertyfile.html#build-and-manage-propertyfile-property
-    evaluation_report = PropertyFile(
-        name="EvaluationReport",
-        output_name="evaluation",
-        path="evaluation.json",
-    )
+    evaluation_report = PropertyFile()
 
     # TODO: Define the ProcessingStep for evaluation.
     # Run evaluate.py with two inputs: model (from training_step) and test (from preprocess_step).
     # Add one output: "evaluation" to s3://{bucket}/finbert/evaluation.
     # Attach evaluation_report to property_files.
-    evaluation_step = ProcessingStep(
-        name="EvaluateModel",
-        step_args=evaluator.run(
-            code="evaluate.py",
-            inputs=[
-                ProcessingInput(
-                    input_name="model",
-                    s3_input=ProcessingS3Input(
-                        s3_uri=training_step.properties.ModelArtifacts.S3ModelArtifacts,
-                        local_path="/opt/ml/processing/model",
-                        s3_data_type="S3Prefix",
-                        s3_input_mode="File",
-                    ),
-                ),
-                ProcessingInput(
-                    input_name="test",
-                    s3_input=ProcessingS3Input(
-                        s3_uri=preprocess_step.properties.ProcessingOutputConfig.Outputs[
-                            "test"
-                        ].S3Output.S3Uri,
-                        local_path="/opt/ml/processing/test",
-                        s3_data_type="S3Prefix",
-                        s3_input_mode="File",
-                    ),
-                ),
-            ],
-            outputs=[
-                ProcessingOutput(
-                    output_name="evaluation",
-                    s3_output=ProcessingS3Output(
-                        s3_uri=f"s3://{bucket}/finbert/evaluation",
-                        local_path="/opt/ml/processing/evaluation",
-                        s3_upload_mode="EndOfJob",
-                    ),
-                ),
-            ],
-        ),
-        property_files=[evaluation_report],
-    )
+    evaluation_step = ProcessingStep()
 
     # ── Step 4: Register model (if accuracy meets threshold) ──────────────────
     print("Configuring register step...")
@@ -231,53 +140,23 @@ def get_pipeline(role: str, bucket: str, session: PipelineSession, region: str) 
     # Use the inference image retrieved above and the model S3 URI from training_step.
     # Hint: https://sagemaker.readthedocs.io/en/v2.208.0/api/inference/model_builder.html
     # Hint: https://docs.aws.amazon.com/sagemaker/latest/dg/how-it-works-modelbuilder-creation.html
-    model_builder = ModelBuilder(
-        s3_model_data_url=training_step.properties.ModelArtifacts.S3ModelArtifacts,
-        image_uri=inference_image,
-        sagemaker_session=session,
-        role_arn=role,
-    )
+    model_builder = ModelBuilder()
 
     # TODO: Create a ModelStep that builds the model in SageMaker.
     #Hint: https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps-types.html#step-type-model
-    create_step = ModelStep(
-        name="CreateModel",
-        step_args=model_builder.build(),
-    )
+
+    create_step = ModelStep()
 
     # TODO: Add a RegisterModel step that registers to the Model Registry
     # Hint https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps-types.html#step-type-register-model
-    register_step = ModelStep(
-        name="RegisterModel",
-        step_args=model_builder.register(
-            model_package_group_name=MODEL_PACKAGE_GROUP,
-            content_types=["application/json"],
-            response_types=["application/json"],
-            inference_instances=["ml.g4dn.xlarge", "ml.m5.large"],
-            approval_status="PendingManualApproval",
-        ),
-    )
+    register_step = ModelStep()
 
     # TODO: Add a ConditionStep that only registers when accuracy >= threshold
     # Hint: https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps-types.html#step-type-condition
-    condition_step = ConditionStep(
-        name="CheckAccuracy",
-        conditions=[
-            ConditionGreaterThanOrEqualTo(
-                left=JsonGet(
-                    step_name=evaluation_step.name,
-                    property_file=evaluation_report,
-                    json_path="metrics.accuracy.value",
-                ),
-                right=ACCURACY_THRESHOLD,
-            )
-        ],
-        if_steps=[create_step, register_step],
-        else_steps=[],
-    )
+    condition_step = ConditionStep()
 
     return Pipeline(
-        name="FinBERTPipeline",
+        name="FinBERTPipelineSolution",
         steps=[preprocess_step, training_step, evaluation_step, condition_step],
         sagemaker_session=session,
     )

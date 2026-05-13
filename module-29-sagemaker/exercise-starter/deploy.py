@@ -32,25 +32,13 @@ def deploy_endpoint(role: str, model_s3: str, session: Session):
     )
 
     #TODO Create a ModelBuilder that points to the trained model artifact in S3 and uses the HuggingFace inference image.
-    model_builder = ModelBuilder(
-        s3_model_data_url=model_s3,
-        image_uri=inference_image,
-        role_arn=role,
-        sagemaker_session=session,
-    )
+    model_builder = ModelBuilder()
 
     #TODO Build the model
-    print(f"Building model from: {model_s3}")
-    model_builder.build()
+
 
     #TODO deploy the model
-    print(f"Deploying to endpoint: {ENDPOINT_NAME} ...")
-    predictor = model_builder.deploy(
-        initial_instance_count=1,
-        instance_type="ml.m5.large",
-        endpoint_name=ENDPOINT_NAME,
-    )
-    print(f"Endpoint ready: {predictor.endpoint_name}")
+    predictor = ...
     return predictor
 
 
@@ -60,37 +48,15 @@ def deploy_endpoint(role: str, model_s3: str, session: Session):
 #   - Min/Max : 1-4 instances
 #   - ScaleOut cooldown : 60 s 
 #   - ScaleIn  cooldown : 300 s 
+# https://docs.aws.amazon.com/boto3/latest/reference/services/application-autoscaling.html
 def configure_autoscaling(endpoint_name: str, region: str):
-    # https://docs.aws.amazon.com/boto3/latest/reference/services/application-autoscaling.html
     aas = boto3.client("application-autoscaling", region_name=region)
     resource_id = f"endpoint/{endpoint_name}/variant/AllTraffic"
 
     #TODO: Register the endpoint as a scalable target with the specified min and max capacity.
-    aas.register_scalable_target(
-        ServiceNamespace="sagemaker",
-        ResourceId=resource_id,
-        ScalableDimension="sagemaker:variant:DesiredInstanceCount",
-        MinCapacity=1,
-        MaxCapacity=4,
-    )
+
 
     #TODO: Create a target-tracking scaling policy that maintains an average of 1000 invocations per instance per minute.
-    aas.put_scaling_policy(
-        PolicyName=f"{endpoint_name}-scaling",
-        ServiceNamespace="sagemaker",
-        ResourceId=resource_id,
-        ScalableDimension="sagemaker:variant:DesiredInstanceCount",
-        PolicyType="TargetTrackingScaling",
-        TargetTrackingScalingPolicyConfiguration={
-            "TargetValue": 1000.0,
-            "PredefinedMetricSpecification": {
-                "PredefinedMetricType": "SageMakerVariantInvocationsPerInstance",
-            },
-            "ScaleInCooldown": 300,
-            "ScaleOutCooldown": 60,
-        },
-    )
-    print("Auto-scaling configured: 1–4 instances, target 1000 invocations/instance")
 
 
 # TODO: Send a test request to the endpoint to verify it returns predictions.

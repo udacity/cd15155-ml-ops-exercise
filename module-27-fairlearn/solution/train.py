@@ -16,21 +16,21 @@ print("Loading dataset...")
 data = fetch_diabetes_hospital(as_frame=True)
 X, y = data.data, data.target
 
-# TODO: Extract the sensitive feature (gender) and drop protected attributes
-# (gender, race) and the target column (readmitted) from X
+# TODO: Extract the sensitive feature (gender)
 sensitive_feature = X["gender"].copy()
+# TODO: drop protected attributes (gender, race) and the target column (readmitted) from X
 X = X.drop(columns=["gender", "race", "readmitted"], errors="ignore")
 
-# TODO: Encode all non-numeric columns using LabelEncoder and cast X to float
+# TODO: Encode all non-numeric columns using LabelEncoder
 for col in X.columns:
     if not pd.api.types.is_numeric_dtype(X[col]):
         X[col] = LabelEncoder().fit_transform(X[col].astype(str))
 X = X.astype(float)
 
-# TODO: Encode target labels and split into train/test sets,
-# keeping the sensitive feature aligned with the split
+# TODO: Encode target labels
 y = LabelEncoder().fit_transform(y)
 
+# TODO: split into train/test sets, keeping the sensitive feature aligned with the split
 X_train, X_test, y_train, y_test, sf_train, sf_test = train_test_split(
     X, y, sensitive_feature, test_size=0.2, random_state=42
 )

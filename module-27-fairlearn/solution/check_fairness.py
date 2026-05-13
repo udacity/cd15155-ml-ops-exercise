@@ -1,6 +1,6 @@
 """
-Fairness gate 
-loads a pre-trained model and evaluates it.
+Evaluates the trained MLP classifier for fairness across gender subgroups.
+
 Run:
     python check_fairness.py
 """
@@ -60,26 +60,8 @@ eod = equalized_odds_difference(y_test, y_pred, sensitive_features=sf_test)
 print(f"\nDemographic parity difference : {dpd:.4f}  (threshold: {DPD_THRESHOLD})")
 print(f"Equalized odds difference     : {eod:.4f}  (threshold: {EOD_THRESHOLD})")
 
-# Export JSON report
 
-report = {
-    "sensitive_attribute": "gender",
-    "overall_accuracy": overall_acc,
-    "demographic_parity_difference": dpd,
-    "equalized_odds_difference": eod,
-    "thresholds": {
-        "demographic_parity_difference": DPD_THRESHOLD,
-        "equalized_odds_difference": EOD_THRESHOLD,
-    },
-    "by_group": mf.by_group.round(4).to_dict(),
-}
-
-with open("fairness_report.json", "w") as f:
-    json.dump(report, f, indent=2)
-
-print("\nReport saved to fairness_report.json")
-
-# TODO: Implement the fairness gate — exit with code 1 if either metric exceeds its threshold
+# TODO: Implement the fairness gate. Exit with code 1 if either metric exceeds its threshold.
 failed = []
 if dpd > DPD_THRESHOLD:
     failed.append(f"demographic_parity_difference {dpd:.4f} > {DPD_THRESHOLD}")

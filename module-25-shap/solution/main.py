@@ -22,10 +22,11 @@ async def lifespan(app: FastAPI):
     global pipe, explainer, label_names
     print(f"Loading model: {MODEL_NAME}...")
     pipe = pipeline("text-classification", model=MODEL_NAME, top_k=None)
-    # TODO: extract label names from the model config
     label_names = [pipe.model.config.id2label[i] for i in range(len(pipe.model.config.id2label))]
     print("Initializing SHAP explainer...")
     # TODO: initialize a shap.Explainer wrapping the pipeline
+    # A pipeline object can be passed directly to SHAP Explainer
+    # https://shap.readthedocs.io/en/latest/generated/shap.Explainer.html#shap.Explainer
     explainer = shap.Explainer(pipe)
     print("Ready.")
     yield

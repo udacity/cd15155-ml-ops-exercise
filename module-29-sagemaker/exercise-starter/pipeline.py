@@ -156,7 +156,7 @@ def get_pipeline(role: str, bucket: str, session: PipelineSession, region: str) 
     condition_step = ConditionStep()
 
     return Pipeline(
-        name="FinBERTPipelineSolution",
+        name="FinBERTPipeline",
         steps=[preprocess_step, training_step, evaluation_step, condition_step],
         sagemaker_session=session,
     )

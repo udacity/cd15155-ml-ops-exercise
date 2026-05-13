@@ -46,10 +46,10 @@ def deploy_endpoint(role: str, model_s3: str, session: Session):
 #   - Metric  : SageMakerVariantInvocationsPerInstance: requests per instance per minute
 #   - Target  : 1000 invocations/instance/min
 #   - Min/Max : 1-4 instances
-#   - ScaleOut cooldown : 60 s 
-#   - ScaleIn  cooldown : 300 s 
-# https://docs.aws.amazon.com/boto3/latest/reference/services/application-autoscaling.html
+#   - ScaleOut cooldown : 60 s
+#   - ScaleIn  cooldown : 300 s
 def configure_autoscaling(endpoint_name: str, region: str):
+    # https://docs.aws.amazon.com/boto3/latest/reference/services/application-autoscaling.html
     aas = boto3.client("application-autoscaling", region_name=region)
     resource_id = f"endpoint/{endpoint_name}/variant/AllTraffic"
 

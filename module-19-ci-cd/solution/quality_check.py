@@ -70,7 +70,6 @@ def main():
 
     print(f"{len(result.results)} checks executed.")
 
-    # As an example, the model quality check will fail if label drift score exceeds 0.5.
     for check_result in result.results:
         if isinstance(check_result, CheckFailure):
             continue

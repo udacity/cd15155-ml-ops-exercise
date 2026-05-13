@@ -6,12 +6,7 @@ import json
 import sys
 
 import pandas as pd
-from sentence_transformers import SentenceTransformer
 
-from evidently.legacy.metrics import EmbeddingsDriftMetric
-from evidently.legacy.metrics.data_drift.embedding_drift_methods import model
-from evidently.legacy.pipeline.column_mapping import ColumnMapping
-from evidently.legacy.report import Report
 
 # NOTE: Download the datasets using the download_data script
 REFERENCE_PATH = "data/reviews_2026_feb_nyc.csv"

@@ -1,5 +1,5 @@
 """
-Download NYC Airbnb listings for 2019 and 2023 from Inside Airbnb.
+Download NYC and Albany Airbnb reviews from Inside Airbnb (February 2026).
 
 Run:
     python download_data.py

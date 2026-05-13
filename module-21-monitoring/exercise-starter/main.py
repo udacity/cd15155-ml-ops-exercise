@@ -4,8 +4,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from PIL import Image
-from prometheus_client import Counter, Histogram
-from prometheus_fastapi_instrumentator import Instrumentator
 from transformers import pipeline
 
 # TODO: Add histogram that tracks the distribution of model prediction confidence scores per request

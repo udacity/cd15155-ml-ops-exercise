@@ -29,9 +29,9 @@ def preprocess(df, categorical_cols, drop_cols):
     # TODO Label-encode categorical columns.
     # LabelEncoder maps each unique string value to an integer
     # Categorical columns are specified in params.yaml
-    le = LabelEncoder()
+    label_encoder = LabelEncoder()
     for col in categorical_cols:
-        df[col] = le.fit_transform(df[col])
+        df[col] = label_encoder.fit_transform(df[col])
 
     # Drop duplicate rows and rows with missing values.
     before = len(df)

@@ -14,7 +14,8 @@ from pathlib import Path
 from feast import Entity, FeatureView, Field, FileSource
 from feast.types import Float64, Int64
 
-DATA_PATH = str(Path(__file__).parent / "data" / "transactions.parquet")
+TRANSACTIONS_PATH = str(Path(__file__).parent / "data" / "transactions.parquet")
+ACTIVITY_PATH = str(Path(__file__).parent / "data" / "cardholder_activity.parquet")
 
 # TODO: Define the cardholder entity with name "cardholder_id"
 cardholder = Entity(
@@ -22,10 +23,15 @@ cardholder = Entity(
     description="Unique identifier for each cardholder",
 )
 
-# TODO: Define a FileSource pointing to transactions.parquet,
-# using "event_timestamp" as the timestamp field
+# TODO: Define the data sources
+
 transaction_source = FileSource(
-    path=DATA_PATH,
+    path=TRANSACTIONS_PATH,
+    timestamp_field="event_timestamp",
+)
+
+activity_source = FileSource(
+    path=ACTIVITY_PATH,
     timestamp_field="event_timestamp",
 )
 
@@ -56,6 +62,6 @@ behavioral_features = FeatureView(
         Field(name="days_since_last_transaction", dtype=Int64),
         Field(name="transaction_velocity", dtype=Float64),
     ],
-    source=transaction_source,
+    source=activity_source,
     description="Behavioral signals per cardholder",
 )

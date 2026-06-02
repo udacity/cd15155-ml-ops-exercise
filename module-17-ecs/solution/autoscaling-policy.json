@@ -1,0 +1,36 @@
+{
+  "scale_out": {
+    "PolicyName": "beans-api-scale-out",
+    "ServiceNamespace": "ecs",
+    "ResourceId": "service/beans-api-cluster/beans-api-service",
+    "ScalableDimension": "ecs:service:DesiredCount",
+    "PolicyType": "StepScaling",
+    "StepScalingPolicyConfiguration": {
+      "AdjustmentType": "ChangeInCapacity",
+      "StepAdjustments": [
+        {
+          "MetricIntervalLowerBound": 0,
+          "ScalingAdjustment": 1
+        }
+      ],
+      "Cooldown": 60
+    }
+  },
+  "scale_in": {
+    "PolicyName": "beans-api-scale-in",
+    "ServiceNamespace": "ecs",
+    "ResourceId": "service/beans-api-cluster/beans-api-service",
+    "ScalableDimension": "ecs:service:DesiredCount",
+    "PolicyType": "StepScaling",
+    "StepScalingPolicyConfiguration": {
+      "AdjustmentType": "ChangeInCapacity",
+      "StepAdjustments": [
+        {
+          "MetricIntervalUpperBound": 0,
+          "ScalingAdjustment": -1
+        }
+      ],
+      "Cooldown": 300
+    }
+  }
+}

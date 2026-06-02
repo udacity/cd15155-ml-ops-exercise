@@ -1,0 +1,69 @@
+name: CI/CD Pipeline
+
+# TODO: Configure the pipeline to trigger on every push to the main branch
+on:
+
+
+env:
+  ECR_REPOSITORY: beans-api
+  TASK_DEFINITION: beans-api
+  CONTAINER_NAME: beans-api
+  ECS_SERVICE: beans-api-service
+  ECS_CLUSTER: beans-api-cluster
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # TODO: Install ruff and run it against main.py and quality_check.py
+
+  quality-check:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # TODO: Add a pip cache keyed by the hash of requirements-quality.txt
+      # TODO: Add a HuggingFace model cache keyed by the model name
+      # TODO: Install requirements-quality.txt
+      # TODO: Run quality_check.py
+
+  build:
+    runs-on: ubuntu-latest
+    needs: # TODO this stage should start if both lint and quality-check succeed
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      # TODO: Login to ECR
+      # TODO: Build the Docker image tagged with the first 8 chars of the commit SHA
+      #         + a timestamp (e.g. "abc12345-1714000000")
+      # TODO: push the image
+      # TODO: tag and push as :latest.
+      # Make sure to use ECR registry env var and not hardcode the registry URI!
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      # TODO: Download the current task definition JSON
+      # TODO: Render the task definition with the :latest image
+      # TODO: deploy and wait for stability

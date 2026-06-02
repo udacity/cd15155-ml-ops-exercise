@@ -1,0 +1,59 @@
+# ── Shared ────────────────────────────────────────────────────────────────────
+numpy>=1.24.0
+pandas>=2.0.0
+pyarrow>=14.0.0
+pyyaml>=6.0
+requests>=2.31
+scipy>=1.10.0
+joblib>=1.3.0
+
+# ── Module 3: DVC + Great Expectations ────────────────────────────────────────
+dvc>=3.0
+great-expectations>=1.0
+
+# ── Module 5: Feast Feature Store ─────────────────────────────────────────────
+feast>=0.40.0
+
+# ── Module 7: MLflow Experiment Tracking ──────────────────────────────────────
+accelerate>=1.1.0
+datasets>=2.14
+mlflow>=2.10
+transformers>=4.36
+
+# ── Module 9: Prefect Workflow Orchestration ───────────────────────────────────
+prefect>=3.6.28
+
+# ── Module 13 / 15: Model Training + Deepchecks ───────────────────────────────
+# NOTE: deepchecks requires scikit-learn<1.4.0 — install in a separate env
+#       if running alongside module-27 (fairlearn requires scikit-learn==1.8.0)
+scikit-learn>=1.3.0,<1.4.0
+torch>=2.0.0
+torchvision>=0.26.0
+deepchecks>=0.18.0
+deepchecks[vision]>=0.18.0
+anywidget==0.11.0
+pillow>=10.0.0
+pytorch-ignite>=0.4.0
+spacy>=3.7.0
+
+# ── Module 17 / 19: FastAPI + CI/CD ───────────────────────────────────────────
+fastapi>=0.110.0
+uvicorn>=0.27.0
+python-multipart>=0.0.9
+prometheus-client>=0.19.0
+prometheus-fastapi-instrumentator>=6.1.0
+
+# ── Module 21: Monitoring (Prometheus + Grafana) ──────────────────────────────
+# (uses fastapi + prometheus-client above)
+
+# ── Module 23: Evidently AI Drift Detection ───────────────────────────────────
+evidently>=0.4.0
+sentence-transformers>=2.2.0
+
+# ── Module 25: SHAP Explainability ────────────────────────────────────────────
+shap>=0.44.0
+
+# ── Module 27: Fairlearn ──────────────────────────────────────────────────────
+# NOTE: requires scikit-learn==1.8.0 — conflicts with module-15 (needs <1.4.0)
+#       run in a separate virtual environment
+fairlearn>=0.10.0

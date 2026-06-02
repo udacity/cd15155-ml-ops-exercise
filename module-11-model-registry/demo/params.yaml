@@ -1,0 +1,31 @@
+model:
+  name: google/vit-base-patch16-224
+
+dataset:
+  name: aaryan317/indian_food_images
+  split: train
+  num_samples: 500
+  val_split: 0.2
+  seed: 42
+
+training:
+  learning_rate: 2.0e-4
+  batch_size: 16
+  num_epochs: 2
+
+mlflow:
+  tracking_uri: http://127.0.0.1:5000
+  experiment_name: food-vit-classification
+  model_artifact_name: food-vit
+  tags:
+    task: image-classification
+    dataset: indian_food_images
+
+registry:
+  model_name: indian-food-classifier
+  description: "ViT fine-tuned on indian_food_images for 20-class Indian food classification."
+  tags:
+    framework: transformers
+    task: image-classification
+    dataset: indian_food_images
+    base_model: google/vit-base-patch16-224

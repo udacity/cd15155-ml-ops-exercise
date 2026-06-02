@@ -1,0 +1,19 @@
+stages:
+  #TODO Add the ingest stage. 
+  #Use the provided ingest.py script and the sales_data.csv file.
+  #track the parameters related to the ingest stage
+  ingest:
+    cmd: 
+    deps:
+
+    params:
+
+    outs:
+
+  #TODO Add the preprocess stage.
+  preprocess:
+
+
+  #TODO Add the validate stage
+  validate:
+

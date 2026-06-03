@@ -1,7 +1,7 @@
 """
 Continuous training flow with model registry promotion.
 
-Run directly — no Prefect server or worker needed:
+Run:
     python flow.py
 """
 
@@ -58,7 +58,7 @@ def continuous_training_flow():
     if passed:
         promote_model()
     else:
-        print("New version did not beat Production — not promoted.")
+        print("New version did not beat Production")
 
 
 if __name__ == "__main__":

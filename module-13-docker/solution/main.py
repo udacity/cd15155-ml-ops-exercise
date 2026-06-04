@@ -56,7 +56,7 @@ def health_check():
     # Check if the model object exists and is functional
     if models.get("vit_model") is not None:
         return {"status": "healthy", "model_loaded": True}
-    return {"status": "unhealthy"}, 503
+    raise HTTPException(status_code=503, detail={"status": "unhealthy", "model_loaded": False})
 
 
 # TODO Implemet /predict endpoint

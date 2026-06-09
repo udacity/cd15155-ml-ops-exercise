@@ -26,11 +26,13 @@ cardholder = Entity(
 # TODO: Define the data sources
 
 transaction_source = FileSource(
+    name="transaction_source",
     path=TRANSACTIONS_PATH,
     timestamp_field="event_timestamp",
 )
 
 activity_source = FileSource(
+    name="activity_source",
     path=ACTIVITY_PATH,
     timestamp_field="event_timestamp",
 )

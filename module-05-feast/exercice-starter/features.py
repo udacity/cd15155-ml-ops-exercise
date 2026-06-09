@@ -21,11 +21,11 @@ ACTIVITY_PATH = str(Path(__file__).parent / "data" / "cardholder_activity.parque
 # Read more https://docs.feast.dev/getting-started/concepts/entity
 cardholder = ...
 
-# TODO: Define a FileSource pointing to transactions.parquet,
+# TODO: Define a FileSource with name "transaction_source" pointing to transactions.parquet,
 # using "event_timestamp" as the timestamp field
 transaction_source = ...
 
-# TODO: Define a FileSource pointing to cardholder_activity.parquet,
+# TODO: Define a FileSource with name "activity_source" pointing to cardholder_activity.parquet,
 # using "event_timestamp" as the timestamp field
 activity_source = ...
 

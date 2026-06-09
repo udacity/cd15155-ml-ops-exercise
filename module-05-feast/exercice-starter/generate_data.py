@@ -36,7 +36,7 @@ activity_rows = []
 for cardholder_id in range(1, NUM_CARDHOLDERS + 1):
     last_ts = None
     for i in range(TIMESTAMPS_PER_CARDHOLDER):
-        event_timestamp = base_time + timedelta(days=i * 3)
+        event_timestamp = base_time + timedelta(days=i * 3, hours=6)
         days_since_last = (event_timestamp - last_ts).days if last_ts else 0
         activity_rows.append({
             "cardholder_id": cardholder_id,

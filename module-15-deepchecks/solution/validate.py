@@ -67,19 +67,21 @@ class BeansDataset(TorchDataset):
 def make_collate_fn(pipe, label_names):
     """Returns a collate function that runs the pipeline and formats for Deepchecks."""
     def collate_fn(examples):
+        #TODO Convert each example's image to RGB and collect the labels
         images_pil = [ex["image"].convert("RGB") for ex in examples]
         labels = [ex["labels"] for ex in examples]
 
-        # Run HuggingFace pipeline on the batch
+        #TODO Run the HuggingFace pipeline on the batch to get the predictions probabilities
         predictions_raw = pipe(images_pil)
         proba = []
         for preds in predictions_raw:
             scores = {p["label"]: p["score"] for p in preds}
             proba.append([scores.get(lbl, 0.0) for lbl in label_names])
 
-        # Convert PIL images to numpy (H, W, C) uint8 for Deepchecks
+        #TODO Convert PIL images to numpy (H, W, C) uint8 for Deepchecks
         images_np = [np.array(img) for img in images_pil]
 
+        #TODO Return a BatchOutputFormat with the images, labels and predictions
         return BatchOutputFormat(
             images=images_np,
             labels=labels,
@@ -118,9 +120,10 @@ def run_quality_checks(pipe, label_names):
     suite = model_evaluation()
     result = suite.run(train_data, test_data, max_samples=5000)
 
+
     result.save_as_html("output.html", as_widget=False)
     print("Report saved to output.html")
-    print(result)
+    
     #TODO Return False if any of the suite's conditions failed, otherwise return True
     return result.passed(fail_if_warning=False)
 

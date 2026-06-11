@@ -5,7 +5,7 @@
 In this exercise you will extend the automated training pipeline by adding a model quality gate. Before a new model is promoted to `@production`, two validation steps must pass:
 
 1. **Champion/challenger**: the new `@dev` model must outperform the current `@production` model on validation accuracy.
-2. **Quality gate**: Deepchecks must confirm the model produces well-calibrated predictions with no significant label drift between train and test sets.
+2. **Quality gate**: Deepchecks must confirm the model passes a model evaluation suite covering class performance, prediction drift, simple model comparison, and weak segment performance.
 
 ---
 
@@ -17,6 +17,14 @@ Start the MLflow tracking server:
 mlflow server --host 127.0.0.1 --port 5000
 ```
 
+Start the prefect server 
+```bash
+prefect server start
+```
+Configure prefect to communicate with the server
+```bash
+prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api
+```
 ---
 
 ## 1. Understand the pipeline
@@ -35,8 +43,8 @@ You do not need to modify `flow.py` or `train.py`.
 
 The champion/challenger logic is already implemented in `champion_challenger()`. You need to complete the Deepchecks quality gate in `run_quality_checks()`.
 
-Read more about Deepchecks VisionData: https://docs.deepchecks.com/stable/vision/usage_guides/visiondata_object.html  
-Read more about the train/test validation suite: https://docs.deepchecks.com/stable/api/generated/deepchecks.vision.suites.train_test_validation.html
+Read more about Deepchecks [VisionData](https://docs.deepchecks.com/stable/vision/usage_guides/visiondata_object.html)
+Read more about the [model evaluation suite](https://docs.deepchecks.com/stable/api/generated/deepchecks.vision.suites.model_evaluation.html)
 
 ---
 

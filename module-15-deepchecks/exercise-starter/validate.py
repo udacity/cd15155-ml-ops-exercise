@@ -64,38 +64,30 @@ class BeansDataset(TorchDataset):
 def make_collate_fn(pipe, label_names):
     """Returns a collate function that runs the pipeline and formats for Deepchecks."""
     def collate_fn(examples):
-        images_pil = [ex["image"].convert("RGB") for ex in examples]
-        labels = [ex["labels"] for ex in examples]
+        #TODO Convert each example's image to RGB and collect the labels
+        images_pil = ...
+        labels = ...
 
-        # Run HuggingFace pipeline on the batch
-        predictions_raw = pipe(images_pil)
-        proba = []
-        for preds in predictions_raw:
-            scores = {p["label"]: p["score"] for p in preds}
-            proba.append([scores.get(lbl, 0.0) for lbl in label_names])
+        #TODO Run the HuggingFace pipeline on the batch to get the predictions probabilities
+        predictions_raw = ...
+        proba = ...
 
-        # Convert PIL images to numpy (H, W, C) uint8 for Deepchecks
-        images_np = [np.array(img) for img in images_pil]
+        #TODO Convert PIL images to numpy (H, W, C) uint8 for Deepchecks
+        images_np = ...
 
-        return BatchOutputFormat(
-            images=images_np,
-            labels=labels,
-            predictions=proba,
-        )
+        #TODO Return a BatchOutputFormat with the images, labels and predictions
+        raise NotImplementedError("TODO: implement the collate function")
     return collate_fn
 
 #TODO Create a function that create a VisionData object
 # Use the collate function above to create a dataloader in deepchecks format
 # and then use the dataloader to create a VisionData object that will be used in the Deepchecks suite
 def build_vision_data(hf_split, pipe, label_names, batch_size=8):
-    dataset = BeansDataset(load_dataset("beans", split=hf_split))
-    label_map = {i: lbl for i, lbl in enumerate(label_names)}
-    loader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        collate_fn=make_collate_fn(pipe, label_names),
-    )
-    return VisionData(batch_loader=loader, task_type="classification", label_map=label_map)
+    dataset = ...
+    label_map = ...
+    loader = ...
+    vision_data = ...
+    return vision_data
 
 #TODO Implement model quality checks using Deepchecks
 def run_quality_checks(pipe, label_names):
@@ -103,26 +95,23 @@ def run_quality_checks(pipe, label_names):
     #TODO Build Deepchecks VisionData objects for the train and test sets using the build_vision_data function above
     # Hint: https://docs.deepchecks.com/stable/vision/usage_guides/visiondata_object.html
     print("Building train VisionData...")
-    train_data = build_vision_data("train", pipe, label_names)
+    train_data = ...
 
     print("Building test VisionData...")
-    test_data = build_vision_data("test", pipe, label_names)
+    test_data = ...
 
 
     print("Running Deepchecks quality suite...")
-    #TODO build deepcheck's train test validation suite and run it on the train/test vision datasets
-    #https://docs.deepchecks.com/stable/api/generated/deepchecks.vision.suites.train_test_validation.html#deepchecks.vision.suites.train_test_validation
-    suite = train_test_validation()
-    result = suite.run(train_data, test_data, max_samples=5000)
+    #TODO build deepcheck's model evaluation suite and run it on the train/test vision datasets
+    #https://docs.deepchecks.com/stable/api/generated/deepchecks.vision.suites.model_evaluation.html#deepchecks.vision.suites.model_evaluation
+    suite = ...
+    result = ...
 
-    #TODO Return False if the suite detects a label drift with a drift score > 0.5, otherwise return True
-    for check_result in result.results:
-        if not isinstance(check_result, CheckFailure) and check_result.check.name() == "Label Drift":
-            drift_score = check_result.value["Samples Per Class"]["Drift score"]
-            if drift_score > 0.5:
-                return False
-
-    return True
+    result.save_as_html("output.html", as_widget=False)
+    print("Report saved to output.html")
+    
+    #TODO Return False if any of the suite's conditions failed, otherwise return True
+    raise NotImplementedError("TODO: implement the quality checks and return True/False based on the results")
 
 
 def main():

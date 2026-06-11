@@ -11,13 +11,12 @@ import mlflow
 import numpy as np
 import yaml
 from datasets import load_dataset
-from deepchecks.core import CheckFailure
 from deepchecks.vision import VisionData, Suite
 from deepchecks.vision.vision_data import BatchOutputFormat
 from mlflow.tracking import MlflowClient
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as TorchDataset
-from deepchecks.vision.suites import train_test_validation
+from deepchecks.vision.suites import model_evaluation
 
 
 def load_params():
@@ -114,19 +113,16 @@ def run_quality_checks(pipe, label_names):
 
 
     print("Running Deepchecks quality suite...")
-    #TODO build deepcheck's train test validation suite and run it on the train/test vision datasets
-    #https://docs.deepchecks.com/stable/api/generated/deepchecks.vision.suites.train_test_validation.html#deepchecks.vision.suites.train_test_validation
-    suite = train_test_validation()
+    #TODO build deepcheck's model evaluation suite and run it on the train/test vision datasets
+    #https://docs.deepchecks.com/stable/api/generated/deepchecks.vision.suites.model_evaluation.html#deepchecks.vision.suites.model_evaluation
+    suite = model_evaluation()
     result = suite.run(train_data, test_data, max_samples=5000)
 
-    #TODO Return False if the suite detects a label drift with a drift score > 0.5, otherwise return True
-    for check_result in result.results:
-        if not isinstance(check_result, CheckFailure) and check_result.check.name() == "Label Drift":
-            drift_score = check_result.value["Samples Per Class"]["Drift score"]
-            if drift_score > 0.5:
-                return False
-
-    return True
+    result.save_as_html("output.html", as_widget=False)
+    print("Report saved to output.html")
+    print(result)
+    #TODO Return False if any of the suite's conditions failed, otherwise return True
+    return result.passed(fail_if_warning=False)
 
 
 def main():

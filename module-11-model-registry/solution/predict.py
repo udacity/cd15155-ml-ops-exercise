@@ -22,10 +22,13 @@ def load_params():
 
 
 # TODO load the production model from MLflow registry
+# Hint: https://mlflow.org/docs/latest/ml/model-registry/tutorial/#example-2-load-via-model-version-alias
 def load_production_model(tracking_uri: str, model_name: str):
     """Loads the model currently in the Production stage from the MLflow registry."""
+    #TODO set the tracking URI for MLflow
     mlflow.set_tracking_uri(tracking_uri)
 
+    #TODO Get model information (version) using the model version alias
     client = MlflowClient()
     model_data = client.get_model_version_by_alias(model_name, "production")
     version = model_data.version
@@ -35,7 +38,9 @@ def load_production_model(tracking_uri: str, model_name: str):
             "Register and promote a model first."
         )
 
+    #TODO Get the model URI
     model_uri = f"models:/{model_name}@production"
+    #TODO Load the model using the model URI
     print(f"Loading model from: {model_uri}  (version {version})")
     return mlflow.transformers.load_model(model_uri)
 

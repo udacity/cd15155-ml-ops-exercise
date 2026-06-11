@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # TODO Create a deployment using serve() that listens to the
     # "new-data-available"
     continuous_training_flow.serve(
-        name="local",
+        name="solution",
         triggers=[
             DeploymentEventTrigger(
                 enabled=True,

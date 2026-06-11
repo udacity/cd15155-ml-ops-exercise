@@ -5,17 +5,24 @@ Prefect is an open-source workflow orchestration tool. In this exercise you will
 
 ## Setup
 
-Start three services in separate terminals before running anything:
+Start three services before running anything. You can use the provided Makefile:
+
+```bash
+make start
+```
+
+Or start them manually in three separate terminals:
 
 ```bash
 # Terminal 1 — MLflow tracking server
 mlflow server --host 127.0.0.1 --port 5000
 
 # Terminal 2 — Prefect server
+prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api
 prefect server start
 
 # Terminal 3 — Prefect worker
-PREFECT_API_URL=http://127.0.0.1:4200/api python -m prefect worker start --pool default
+python -m prefect worker start --pool default
 ```
 
 

@@ -49,7 +49,7 @@ def continuous_training_flow():
     if passed:
         save_model()
     else:
-        print("Model failed validation — not saved.")
+        print("Model failed validation. Model not saved.")
 
 
 if __name__ == "__main__":

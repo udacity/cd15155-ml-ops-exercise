@@ -1,3 +1,7 @@
 .DS_Store
 .vscode
+**/__pycache__/
+**/*.pyc
+**/mlflow.db
+**/mlartifacts/
 

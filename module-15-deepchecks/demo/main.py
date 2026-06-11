@@ -7,6 +7,9 @@ Checks:
   3. ConfusionMatrixReport   — false positives vs false negatives
 """
 
+import warnings
+warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
+
 import numpy as np
 import pandas as pd
 import torch
@@ -121,16 +124,13 @@ def build_datasets(X_train, X_test, y_train, y_test, feature_cols):
     test_ds = Dataset(test_df, label="label", cat_features=[])
     return train_ds, test_ds
 
-
 def build_suite():
     return Suite(
         "Spam Detection Quality Suite",
         TrainTestPerformance().add_condition_test_performance_greater_than(0.80),
-        WeakSegmentsPerformance(),
-        ConfusionMatrixReport(),
+        WeakSegmentsPerformance().add_condition_segments_relative_performance_greater_than(0.20),
+        ConfusionMatrixReport().add_condition_misclassified_samples_lower_than_condition(0.20),
     )
-
-
 
 def main():
     print("Loading dataset...")
@@ -150,6 +150,7 @@ def main():
 
     print("\nPreparing Deepchecks datasets...")
     train_ds, test_ds = build_datasets(X_train, X_test, y_train, y_test, feature_cols)
+    print(train_ds.data.head())
 
     print("Running quality suite...")
     suite = build_suite()
@@ -161,19 +162,8 @@ def main():
         y_proba_test=test_proba,
     )
 
-    with open("report.json", "w") as f:
-        f.write(result.to_json())
-    print("\nReport saved to report.json")
-
-    print("\nChecks summary:")
-    for check_result in result.results:
-        if isinstance(check_result, CheckFailure):
-            print(f"  [ERROR] {check_result.check.name()}: {check_result.exception}")
-        elif check_result.have_conditions():
-            status = "PASS" if check_result.passed_conditions() else "FAIL"
-            print(f"  [{status}] {check_result.check.name()}")
-        else:
-            print(f"  [INFO] {check_result.check.name()}")
+    result.save_as_html("report.html", as_widget=False)
+    print("\nReport saved to report.html")
 
 
 if __name__ == "__main__":

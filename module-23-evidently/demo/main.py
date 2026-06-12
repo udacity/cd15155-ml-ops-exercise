@@ -32,7 +32,7 @@ def load_and_clean(path: str) -> pd.DataFrame:
         df["price"].astype(str).str.replace(r"[\$,]", "", regex=True).astype(float)
     )
     df = df.dropna()
-    # Drop extreme price outliers so the drift charts show the actual distribution
+    # Drop extreme price outliers 
     return df[df["price"] <= MAX_PRICE]
 
 

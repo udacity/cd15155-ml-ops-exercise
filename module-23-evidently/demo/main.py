@@ -22,6 +22,7 @@ FEATURES = [
 
 DRIFT_THRESHOLD = 0.1
 SAMPLE_SIZE = 5000
+MAX_PRICE = 1000
 
 
 def load_and_clean(path: str) -> pd.DataFrame:
@@ -30,7 +31,9 @@ def load_and_clean(path: str) -> pd.DataFrame:
     df["price"] = (
         df["price"].astype(str).str.replace(r"[\$,]", "", regex=True).astype(float)
     )
-    return df.dropna()
+    df = df.dropna()
+    # Drop extreme price outliers so the drift charts show the actual distribution
+    return df[df["price"] <= MAX_PRICE]
 
 
 print("Loading data...")

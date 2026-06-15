@@ -42,7 +42,7 @@ X_test = scaler.transform(X_test)
 
 print("Training MLP...")
 start_time = time.time()
-model = MLPClassifier(hidden_layer_sizes=(64, 32), max_iter=100, random_state=42)
+model = MLPClassifier(hidden_layer_sizes=(64, 32), max_iter=100, batch_size=512, early_stopping=True, random_state=42)
 model.fit(X_train, y_train)
 print(f"Training took {time.time() - start_time:.2f} seconds")
 

@@ -26,15 +26,14 @@ jobs:
           path: ~/.cache/pip
           key: pip-fairlearn-${{ hashFiles('module-27-fairlearn/solution/requirements.txt') }}
 
-      # TODO: Install dependencies from requirements.txt
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # TODO: Train the model and save the model + test data artifacts
       - name: Train model
         run: python train.py
 
       # TODO: Upload the model and test data so the check-fairness job can use them
+      # (model.joblib, X_test.npy, y_test.npy, sf_test.csv)
       - name: Upload model artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -64,7 +63,6 @@ jobs:
           path: ~/.cache/pip
           key: pip-fairlearn-${{ hashFiles('module-27-fairlearn/solution/requirements.txt') }}
 
-      # TODO: Install dependencies from requirements.txt
       - name: Install dependencies
         run: pip install -r requirements.txt
 

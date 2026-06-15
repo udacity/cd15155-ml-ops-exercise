@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - content
     paths:
       - "module-27-fairlearn/**"
 

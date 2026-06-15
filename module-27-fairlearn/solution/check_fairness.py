@@ -1,5 +1,5 @@
 """
-Evaluates the trained MLP classifier for fairness across gender subgroups.
+Evaluates the trained MLP classifier for fairness across gender and race subgroups.
 
 Run:
     python check_fairness.py
@@ -69,7 +69,7 @@ print(f"Equalized odds difference     (race)   : {eod_race:.4f}  (threshold: {EO
 
 # TODO: Save a fairness report with the per-group metrics and gap comparisons to disk
 report = {
-    "sensitive_attribute": "gender",
+    "sensitive_attributes": ["gender", "race"],
     "overall_accuracy": overall_acc,
     "demographic_parity_difference_gender": dpd_gender,
     "equalized_odds_difference_gender": eod_gender,

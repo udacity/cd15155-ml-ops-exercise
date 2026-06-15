@@ -57,3 +57,4 @@ shap>=0.44.0
 # NOTE: requires scikit-learn==1.8.0 — conflicts with module-15 (needs <1.4.0)
 #       run in a separate virtual environment
 fairlearn>=0.10.0
+skorch==1.4.0

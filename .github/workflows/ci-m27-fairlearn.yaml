@@ -4,11 +4,12 @@ on:
   push:
     branches:
       - main
+      - content
     paths:
       - "module-27-fairlearn/**"
 
 jobs:
-  fairness-check:
+  train:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -30,10 +31,52 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # TODO: Run the fairness gate against the pre-trained model artifacts
-      # (model.joblib, X_test.npy, y_test.npy, sf_test.csv).
-      # Run train.py locally first to generate these files and commit them.
-      # Exits with code 1 if any fairness metric exceeds its threshold.
+      # TODO: Train the model and save the model + test data artifacts
+      - name: Train model
+        run: python train.py
+
+      # TODO: Upload the model and test data so the check-fairness job can use them
+      - name: Upload model artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-artifacts
+          path: |
+            module-27-fairlearn/solution/model.joblib
+            module-27-fairlearn/solution/X_test.npy
+            module-27-fairlearn/solution/y_test.npy
+            module-27-fairlearn/solution/sf_test.csv
+
+  check-fairness:
+    runs-on: ubuntu-latest
+    needs: train
+    defaults:
+      run:
+        working-directory: module-27-fairlearn/solution
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-fairlearn-${{ hashFiles('module-27-fairlearn/solution/requirements.txt') }}
+
+      # TODO: Install dependencies from requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # TODO: Download the model and test data artifacts from the train job
+      - name: Download model artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: model-artifacts
+          path: module-27-fairlearn/solution
+
+      # TODO: Run the fairness gate against the model artifacts
       - name: Run fairness gate
         run: python check_fairness.py
 
@@ -44,11 +87,3 @@ jobs:
         with:
           name: fairness-report
           path: module-27-fairlearn/solution/fairness_report.json
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: fairness-check
-    steps:
-      # TODO: Add deployment steps here — this job only runs if fairness-check passes
-      - name: Deploy model
-        run: echo "Fairness checks passed... deploying model."

@@ -4,6 +4,8 @@ Run:
     python train.py
 """
 
+import time
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -16,8 +18,8 @@ print("Loading dataset...")
 data = fetch_diabetes_hospital(as_frame=True)
 X, y = data.data, data.target
 
-# TODO: Extract the sensitive feature (gender)
-sensitive_feature = X["gender"].copy()
+# TODO: Extract the sensitive features (gender, race)
+sensitive_features = X[["gender", "race"]].copy()
 # TODO: drop protected attributes (gender, race) and the target column (readmitted) from X
 X = X.drop(columns=["gender", "race", "readmitted"], errors="ignore")
 
@@ -30,9 +32,9 @@ X = X.astype(float)
 # TODO: Encode target labels
 y = LabelEncoder().fit_transform(y)
 
-# TODO: split into train/test sets, keeping the sensitive feature aligned with the split
+# TODO: split into train/test sets, keeping the sensitive features aligned with the split
 X_train, X_test, y_train, y_test, sf_train, sf_test = train_test_split(
-    X, y, sensitive_feature, test_size=0.2, random_state=42
+    X, y, sensitive_features, test_size=0.2, random_state=42
 )
 
 scaler = StandardScaler()
@@ -40,8 +42,10 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
 print("Training MLP...")
+start_time = time.time()
 model = MLPClassifier(hidden_layer_sizes=(64, 32), max_iter=100, random_state=42)
 model.fit(X_train, y_train)
+print(f"Training took {time.time() - start_time:.2f} seconds")
 
 joblib.dump({"model": model, "scaler": scaler}, "model.joblib")
 np.save("X_test.npy", X_test)

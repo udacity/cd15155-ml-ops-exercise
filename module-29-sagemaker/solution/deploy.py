@@ -1,55 +1,31 @@
 """
-Deploy a trained FinBERT model and configure auto-scaling.
+Deploy a trained FinBERT model from the SageMaker Model Registry.
 
-Run after the pipeline completes:
-    python deploy.py --model-s3 <uri> --role <ARN> 
+Approve the model version in the registry first, then run:
+    python deploy.py --model-package-arn <arn> --role <ARN>
 """
 
 import argparse
 import json
 
 import boto3
-from sagemaker.core import image_uris
 from sagemaker.core.helper.session_helper import Session, get_execution_role
-from sagemaker.serve.model_builder import ModelBuilder
+from sagemaker.core.resources import ModelPackage
+from sagemaker.serve import ModelBuilder
 
 ENDPOINT_NAME = "finbert-sentiment-endpoint"
 
 
-# TODO: Deploy the trained model to a SageMaker managed endpoint
-# https://docs.aws.amazon.com/sagemaker/latest/dg/how-it-works-modelbuilder-creation.html#how-it-works-modelbuilder-creation-deploy
-def deploy_endpoint(role: str, model_s3: str, session: Session):
-    region = session.boto_region_name
+def deploy_endpoint(model_package_arn: str):
+    model_package = ModelPackage.get(model_package_name=model_package_arn)
 
-    inference_image = image_uris.retrieve(
-        framework="huggingface",
-        region=region,
-        version="4.26.0",
-        py_version="py39",
-        base_framework_version="pytorch1.13.1",
-        image_scope="inference",
-        instance_type="ml.m5.large",
-    )
+    model_builder = ModelBuilder(model=model_package)
 
-    #TODO Create a ModelBuilder that points to the trained model artifact in S3 and uses the HuggingFace inference image.
-    model_builder = ModelBuilder(
-        s3_model_data_url=model_s3,
-        image_uri=inference_image,
-        role_arn=role,
-        sagemaker_session=session,
-    )
-
-    #TODO Build the model
-    print(f"Building model from: {model_s3}")
+    print("Building model from registry...")
     model_builder.build()
 
-    #TODO deploy the model
     print(f"Deploying to endpoint: {ENDPOINT_NAME} ...")
-    predictor = model_builder.deploy(
-        initial_instance_count=1,
-        instance_type="ml.m5.large",
-        endpoint_name=ENDPOINT_NAME,
-    )
+    predictor = model_builder.deploy(endpoint_name=ENDPOINT_NAME)
     print(f"Endpoint ready: {predictor.endpoint_name}")
     return predictor
 
@@ -119,18 +95,17 @@ def verify_endpoint(endpoint_name: str, region: str):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model-s3", required=True,
-                        help="S3 URI of model.tar.gz (from training job output)")
+    parser.add_argument("--model-package-arn", required=True,
+                        help="ARN of the approved model package from the SageMaker Model Registry")
     parser.add_argument("--role", default=None)
     args = parser.parse_args()
 
     session = Session()
-    role    = args.role or get_execution_role()
-    region  = session.boto_region_name
+    role   = args.role or get_execution_role()
+    region = session.boto_region_name
 
-    predictor = deploy_endpoint(role, args.model_s3, session)
+    predictor = deploy_endpoint(args.model_package_arn)
     configure_autoscaling(predictor.endpoint_name, region)
-    
     verify_endpoint(predictor.endpoint_name, region)
 
     print(f"\nDeployment complete.")

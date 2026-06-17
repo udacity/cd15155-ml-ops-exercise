@@ -16,16 +16,28 @@ from sagemaker.serve import ModelBuilder
 ENDPOINT_NAME = "finbert-sentiment-endpoint"
 
 
-def deploy_endpoint(model_package_arn: str):
-    model_package = ModelPackage.get(model_package_name=model_package_arn)
+def deploy_endpoint(role: str, model_package_arn: str, session: Session):
+    registered_package = ModelPackage.get(model_package_name=model_package_arn)
 
-    model_builder = ModelBuilder(model=model_package)
+    s3_uri = registered_package.inference_specification.containers[0].model_data_url
+    image  = registered_package.inference_specification.containers[0].image
+
+    model_builder = ModelBuilder(
+        s3_model_data_url=s3_uri,
+        image_uri=image,
+        role_arn=role,
+        sagemaker_session=session,
+    )
 
     print("Building model from registry...")
-    model_builder.build()
+    deployable_model = model_builder.build(model_name="finbert-from-registry")
 
     print(f"Deploying to endpoint: {ENDPOINT_NAME} ...")
-    predictor = model_builder.deploy(endpoint_name=ENDPOINT_NAME)
+    predictor = deployable_model.deploy(
+        initial_instance_count=1,
+        instance_type="ml.m5.large",
+        endpoint_name=ENDPOINT_NAME,
+    )
     print(f"Endpoint ready: {predictor.endpoint_name}")
     return predictor
 
@@ -104,7 +116,7 @@ def main():
     role   = args.role or get_execution_role()
     region = session.boto_region_name
 
-    predictor = deploy_endpoint(args.model_package_arn)
+    predictor = deploy_endpoint(role, args.model_package_arn, session)
     configure_autoscaling(predictor.endpoint_name, region)
     verify_endpoint(predictor.endpoint_name, region)
 

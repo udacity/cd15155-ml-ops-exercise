@@ -23,6 +23,10 @@ export PREFECT_UI_API_URL=$(echo $VSCODE_PROXY_URI | sed 's/{{port}}/4200/')api
 prefect config set PREFECT_API_URL=http://0.0.0.0:4200/api
 prefect server start --host 0.0.0.0
 ```
+
+Start a prefect worker
+```bashpython -m prefect worker start --pool default 
+```
 ---
 
 ## 1. Understand the pipeline

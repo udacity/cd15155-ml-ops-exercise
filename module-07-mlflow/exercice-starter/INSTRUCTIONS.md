@@ -9,7 +9,7 @@ In this exercise you will instrument a FinBERT fine-tuning script with MLflow tr
 Before running any training, start the MLflow server locally.
 
 ```bash
-mlflow server --host 127.0.0.1 --port 5000
+mlflow server --port 5000 --host 0.0.0.0 --allowed-hosts "*"
 ```
 
 Leave this running in a separate terminal. All runs will be logged to `http://127.0.0.1:5000`, which matches the `tracking_uri` in `params.yaml`.

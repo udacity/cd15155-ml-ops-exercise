@@ -2,9 +2,12 @@
 FinBERT fine-tuning with HuggingFace Trainer + a custom MLflow callback.
 """
 
+import logging
 import mlflow
 import mlflow.pytorch
 import numpy as np
+
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 import yaml
 from datasets import load_dataset
 from sklearn.metrics import accuracy_score

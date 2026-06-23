@@ -2,9 +2,12 @@
 FinBERT fine-tuning with HuggingFace Trainer + a custom MLflow callback.
 """
 
+import logging
 import mlflow
 import mlflow.pytorch
 import numpy as np
+
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 import yaml
 from datasets import load_dataset
 from sklearn.metrics import accuracy_score
@@ -82,7 +85,7 @@ class MLflowCallback(TrainerCallback):
         # TODO: Log the model as an MLflow artifact and end the run.
         if model is not None:
             mlflow.pytorch.log_model(
-                model, name=self.params["mlflow"]["model_artifact_name"]
+                model, name=self.params["mlflow"]["model_artifact_name"], serialization_format="pickle"
             )
         mlflow.end_run()
         print(

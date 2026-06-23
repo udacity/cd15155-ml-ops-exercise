@@ -2,14 +2,19 @@
 FinBERT fine-tuning with MLflow experiment tracking.
 """
 
+import json
+import logging
 import mlflow
 import mlflow.pytorch
 import torch
 import yaml
 from datasets import load_dataset
+from huggingface_hub import hf_hub_download
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 
 
 def load_params():
@@ -17,8 +22,21 @@ def load_params():
         return yaml.safe_load(f)
 
 
+def patch_model_config(model_name):
+    config_path = hf_hub_download(model_name, "config.json")
+    with open(config_path) as f:
+        config = json.load(f)
+    if "id2label" in config and isinstance(next(iter(config["id2label"].values())), float):
+        config["id2label"] = {k: f"LABEL_{k}" for k in config["id2label"]}
+        config["label2id"] = {v: int(k) for k, v in config["id2label"].items()}
+        with open(config_path, "w") as f:
+            json.dump(config, f, indent=2)
+
+
 def load_data(params):
     cfg = params["dataset"]
+
+    patch_model_config(params["model"]["name"])
     tokenizer = AutoTokenizer.from_pretrained(params["model"]["name"])
 
     dataset = load_dataset(cfg["name"], split="train")
@@ -140,7 +158,7 @@ def main():
 
         # Save the trained model as an MLflow artifact
         # This takes some time
-        mlflow.pytorch.log_model(model, name=mf["model_artifact_name"])
+        mlflow.pytorch.log_model(model, name=mf["model_artifact_name"], serialization_format="pickle")
         print(f"Run complete. Model logged as artifact '{mf['model_artifact_name']}'.")
 
 

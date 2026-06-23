@@ -10,7 +10,7 @@ In this exercise you will package the beans disease classifier from module 11 in
 Make sure the MLflow server is running and the `beans-disease-classifier` model is registered and promoted to the `production` alias. If not, run `evaluate.py` first:
 
 ```bash
-mlflow server --host 0.0.0.0 --port 5000 --allowed-hosts host.docker.internal,localhost,127.0.0.1
+mlflow server --port 5000 --host 0.0.0.0 --allowed-hosts "*"
 python evaluate.py
 ```
 

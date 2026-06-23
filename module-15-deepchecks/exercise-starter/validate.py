@@ -11,7 +11,9 @@ import mlflow
 import numpy as np
 import yaml
 from datasets import load_dataset
+import logging
 from mlflow.tracking import MlflowClient
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as TorchDataset
 
@@ -82,7 +84,7 @@ def make_collate_fn(pipe, label_names):
 #TODO Create a function that create a VisionData object
 # Use the collate function above to create a dataloader in deepchecks format
 # and then use the dataloader to create a VisionData object that will be used in the Deepchecks suite
-def build_vision_data(hf_split, pipe, label_names, batch_size=8):
+def build_vision_data(hf_split, pipe, label_names, dataset_name, batch_size=8):
     dataset = ...
     label_map = ...
     loader = ...
@@ -90,7 +92,7 @@ def build_vision_data(hf_split, pipe, label_names, batch_size=8):
     return vision_data
 
 #TODO Implement model quality checks using Deepchecks
-def run_quality_checks(pipe, label_names):
+def run_quality_checks(pipe, label_names, dataset_name):
 
     #TODO Build Deepchecks VisionData objects for the train and test sets using the build_vision_data function above
     # Hint: https://docs.deepchecks.com/stable/vision/usage_guides/visiondata_object.html
@@ -130,10 +132,11 @@ def main():
     print("\nLoading @dev model from MLflow registry...")
     pipe = mlflow.transformers.load_model(f"models:/{model_name}@dev")
 
-    dataset = load_dataset("beans", split="validation")
+    dataset_name = params["dataset"]["name"]
+    dataset = load_dataset(dataset_name, split="validation")
     label_names = dataset.features["labels"].names
 
-    return run_quality_checks(pipe, label_names)
+    return run_quality_checks(pipe, label_names, dataset_name)
 
 
 if __name__ == "__main__":

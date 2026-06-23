@@ -4,7 +4,9 @@ Continuous training flow with model registry promotion.
 
 import mlflow
 import yaml
+import logging
 from mlflow.tracking import MlflowClient
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 from prefect import flow, task
 
 

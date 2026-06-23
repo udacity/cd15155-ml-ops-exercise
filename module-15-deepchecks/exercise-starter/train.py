@@ -7,7 +7,9 @@ import mlflow.transformers
 import torch
 import yaml
 from datasets import load_dataset
+import logging
 from mlflow.tracking import MlflowClient
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
 from transformers import AutoImageProcessor, AutoModelForImageClassification

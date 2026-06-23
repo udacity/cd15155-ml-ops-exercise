@@ -11,6 +11,10 @@ Running the full Prometheus + Grafana stack is optional and intended for local u
 
 Prometheus needs to know where to scrape metrics. Complete the configuration file so Prometheus scrapes the `/metrics` endpoint of the FastAPI app every 15 seconds.
 
+Start Prometheus server using the configuration file
+```bash
+prometheus --config.file=prometheus.yml
+```
 ---
 
 ## 2. Complete `main.py`
@@ -27,34 +31,23 @@ The API already serves predictions at `/predict`. You need to add Prometheus ins
 
 Read more: https://prometheus.github.io/client_python/
 
----
-
-## 3. Verify metrics
-
-Send a few requests to the API:
-
-```bash
-curl -X POST http://localhost:8000/predict -F "file=@<your-image.jpg>"
+Launch the API
+```
+python main.py
 ```
 
-Then check that your custom metrics appear at `http://localhost:8000/metrics`. Look for `model_prediction_confidence` and `model_prediction_class_total`.
-
+Send requests to the API to simulate traffic
+```bash
+python send_requests.py
+```
 ---
 
-## (Optional) Run the full stack locally with Docker Compose
-
-> Please **DO NOT** run Docker Compose inside the student workspace.
-> These steps are for local use only.
-
-`docker-compose.yml` starts three services together:
-- **beans-api** (port 8000): the FastAPI inference server
-- **Prometheus** (port 9090): scrapes metrics from the API
-- **Grafana** (port 3000): visualizes metrics from Prometheus
-
+## 3. Launch Granafa and create the dashboard
 ```bash
-docker-compose up --build
+export GF_SERVER_ROOT_URL=$(echo $VSCODE_PROXY_URI | sed "s/{{port}}/4000/")
+
+grafana server --config=/etc/grafana/grafana.ini --homepath=/usr/share/grafana
 ```
 
-Once running, open Grafana at http://localhost:3000 (login: admin / admin):
-- Add Prometheus as a data source (URL: `http://prometheus:9090`)
-- Create a dashboard with panels for request rate, confidence distribution, and prediction counts per class
+Create a dashboard with panels for request rate, confidence distribution, and prediction counts per class
+---

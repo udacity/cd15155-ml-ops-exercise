@@ -58,13 +58,14 @@ Read more about to create ECS service using the Console [here](https://docs.aws.
 
 Register the ECS service as a scalable target with a minimum of 1 task and a maximum of 4 tasks.
 
-Register a scale-out policy that triggers when CPU utilization is higher than 70%.
-
-Register a scale-in policy that triggers when CPU utilization is less than 10% for 5 consecutive minutes.
+Create two **Step Scaling** policies (not Target Tracking):
+- A **scale-out** Step Scaling policy that adds 1 task when CPU utilization is greater than or equal to 70%.
+- A **scale-in** Step Scaling policy that removes 1 task when CPU utilization is less than or equal to 10% for 5 consecutive minutes.
 
 If you prefer to use the command line, complete the auto-scaling TODO in `deploy.sh`.
 
-Follow the instructions in the [AWS documentation](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/target-tracking-create-policy.html).
+Follow the instructions in the [AWS documentation](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/step-scaling-create-policy.html).
+Another useful resource is available [here](https://docs.aws.amazon.com/autoscaling/application/userguide/create-step-scaling-policy-cli.html)
 
 ---
 
@@ -97,10 +98,21 @@ sh test.sh
 
 ## Teardown
 
-Delete all resources when done:
+Run the cleanup script to delete all AWS resources created during this exercise:
 
 ```bash
-aws ecs delete-service --cluster $CLUSTER --service $SERVICE --force --region $AWS_REGION
-aws ecs delete-cluster --cluster $CLUSTER --region $AWS_REGION
-aws ecr delete-repository --repository-name $ECR_REPO --force --region $AWS_REGION
+bash cleanup.sh
 ```
+
+The script deletes resources in this order:
+1. CloudWatch alarms
+2. Auto-scaling policies and scalable target
+3. ECS service (scaled down to 0 first, then deleted)
+4. Task definition revisions
+5. ECS cluster
+6. CloudWatch log group
+7. IAM role and policy attachment
+8. Security group
+9. ECR repository and all images
+
+> **Important:** Always run the cleanup script at the end of the exercise to avoid incurring AWS charges.

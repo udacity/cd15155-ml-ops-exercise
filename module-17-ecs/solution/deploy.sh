@@ -6,6 +6,8 @@ export AWS_ACCESS_KEY_ID=""
 export AWS_SECRET_ACCESS_KEY=""
 export AWS_SESSION_TOKEN=""
 
+export AWS_PAGER=""
+
 AWS_REGION=us-east-1
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ECR_REPO=beans-api
@@ -120,17 +122,24 @@ SCALE_IN_ARN=$(aws application-autoscaling put-scaling-policy \
   --query PolicyARN --output text --region $AWS_REGION)
 
 aws cloudwatch put-metric-alarm \
-  --alarm-name beans-api-cpu-high --metric-name CPUUtilization --namespace AWS/ECS \
+  --alarm-name beans-api-cpu-high \
+  --metric-name CPUUtilization --statistic Average \
+  --namespace AWS/ECS \
   --dimensions Name=ClusterName,Value=$CLUSTER Name=ServiceName,Value=$SERVICE \
-  --statistic Average --period 60 --threshold 70 \
-  --comparison-operator GreaterThanThreshold --evaluation-periods 1 \
+  --period 60 \
+  --threshold 70 \
+  --comparison-operator GreaterThanOrEqualToThreshold \
+  --evaluation-periods 1 \
   --alarm-actions $SCALE_OUT_ARN --region $AWS_REGION
 
 aws cloudwatch put-metric-alarm \
-  --alarm-name beans-api-cpu-low --metric-name CPUUtilization --namespace AWS/ECS \
+  --alarm-name beans-api-cpu-low  \
+  --metric-name CPUUtilization --statistic Average\
+  --namespace AWS/ECS \
   --dimensions Name=ClusterName,Value=$CLUSTER Name=ServiceName,Value=$SERVICE \
-  --statistic Average --period 60 --threshold 10 \
-  --comparison-operator LessThanThreshold --evaluation-periods 5 \
+  --period 60 \
+  --threshold 10 \
+  --comparison-operator LessThanOrEqualToThreshold --evaluation-periods 5 \
   --alarm-actions $SCALE_IN_ARN --region $AWS_REGION
 
 echo "Deployment complete. Run test.sh to verify the endpoint."

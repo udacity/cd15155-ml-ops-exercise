@@ -30,9 +30,6 @@ echo "Service running at: http://$PUBLIC_IP:8000"
 # Health check
 curl http://$PUBLIC_IP:8000/health
 
-# Predict with a sample bean image
-curl -sL -o test.jpg \
-  "https://huggingface.co/datasets/beans/resolve/main/data/test/angular_leaf_spot/angular_leaf_spot_test.0.jpg"
-
+# Predict with the sample image
 curl -X POST http://$PUBLIC_IP:8000/predict \
-  -F "file=@test.jpg"
+  -F "file=@test-image.jpg"

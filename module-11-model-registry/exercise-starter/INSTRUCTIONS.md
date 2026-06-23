@@ -13,7 +13,7 @@ In this exercise, you are given a pre-trained Visual Transformer model fine-tune
 Start the MLflow tracking server:
 
 ```bash
-mlflow server --host 127.0.0.1 --port 5000
+mlflow server --port 5000 --host 0.0.0.0 --allowed-hosts "*"
 ```
 
 ---

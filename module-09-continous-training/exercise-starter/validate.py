@@ -3,8 +3,11 @@ Compares the latest trained model against the best model seen so far.
 Returns True if the new model is better and should be saved, False otherwise.
 """
 
+import logging
 import mlflow
 import yaml
+
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 from mlflow.tracking import MlflowClient
 
 

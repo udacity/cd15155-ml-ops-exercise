@@ -13,7 +13,9 @@ import mlflow
 import yaml
 
 # TODO Import MlflowClient
+import logging
 from mlflow.tracking import MlflowClient
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 
 
 def load_params():

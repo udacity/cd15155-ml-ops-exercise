@@ -5,7 +5,9 @@ Usage:
     python evaluate.py
 """
 
+import logging
 import mlflow
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 import yaml
 from datasets import load_dataset
 from transformers import pipeline

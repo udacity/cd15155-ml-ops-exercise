@@ -4,8 +4,11 @@ Sales MLP training with MLflow tracking.
 
 import os
 
+import logging
 import mlflow
 import pandas as pd
+
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 import torch
 import torch.nn as nn
 import yaml

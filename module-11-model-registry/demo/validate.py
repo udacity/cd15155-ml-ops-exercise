@@ -5,7 +5,9 @@ Returns True if the dev version should be promoted, False otherwise.
 
 import mlflow
 import yaml
+import logging
 from mlflow.tracking import MlflowClient
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 
 
 def load_params():

@@ -3,8 +3,11 @@ Compares the latest run (challenger) against the best previous run (champion).
 Returns True if the challenger should replace the champion, False otherwise.
 """
 
+import logging
 import mlflow
 import yaml
+
+logging.getLogger("mlflow.tracking.request_header.registry").setLevel(logging.ERROR)
 from mlflow.tracking import MlflowClient
 
 

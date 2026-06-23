@@ -46,3 +46,27 @@ python deploy.py --model-s3 s3://<bucket>/finbert/output/<job>/output/model.tar.
 Read more: https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints.html
 
 ---
+
+## Teardown
+
+Run the cleanup script to delete all AWS resources created during this exercise:
+
+```bash
+python cleanup.py
+```
+
+Or with explicit arguments:
+
+```bash
+python cleanup.py --bucket <bucket> --region <region>
+```
+
+The script deletes resources in this order:
+1. Auto-scaling policy and scalable target for the endpoint
+2. SageMaker endpoint
+3. SageMaker model
+4. Model packages and model package group
+5. SageMaker pipeline
+6. S3 data (`finbert/` prefix in your default bucket)
+
+> **Important:** Always run the cleanup script at the end of the exercise to avoid incurring AWS charges.

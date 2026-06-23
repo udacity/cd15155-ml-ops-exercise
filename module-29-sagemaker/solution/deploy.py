@@ -30,14 +30,10 @@ def deploy_endpoint(role: str, model_package_arn: str, session: Session):
     )
 
     print("Building model from registry...")
-    deployable_model = model_builder.build(model_name="finbert-from-registry")
+    model_builder.build(model_name="finbert-from-registry")
 
     print(f"Deploying to endpoint: {ENDPOINT_NAME} ...")
-    predictor = deployable_model.deploy(
-        initial_instance_count=1,
-        instance_type="ml.m5.large",
-        endpoint_name=ENDPOINT_NAME,
-    )
+    predictor = model_builder.deploy(endpoint_name=ENDPOINT_NAME)
     print(f"Endpoint ready: {predictor.endpoint_name}")
     return predictor
 

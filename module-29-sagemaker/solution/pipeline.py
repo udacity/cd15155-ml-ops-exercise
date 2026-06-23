@@ -39,7 +39,7 @@ from sagemaker.core.workflow.properties import PropertyFile
 MODEL_PACKAGE_GROUP = "FinBERTSentimentClassifiers"
 
 # TODO: Set the minimum accuracy required to register the model
-ACCURACY_THRESHOLD = ...
+ACCURACY_THRESHOLD = 0.5
 
 
 def get_pipeline(role: str, bucket: str, session: PipelineSession, region: str) -> Pipeline:

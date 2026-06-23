@@ -3,7 +3,7 @@ model:
   task: image-classification
 
 dataset:
-  name: beans
+  name: AI-Lab-Makerere/beans
 
 training:
   learning_rate: 2.0e-4

@@ -14,16 +14,14 @@ In this exercise you will extend the automated training pipeline by adding a mod
 Start the MLflow tracking server:
 
 ```bash
-mlflow server --host 127.0.0.1 --port 5000
+mlflow server --port 5000 --host 0.0.0.0 --allowed-hosts "*"
 ```
 
-Start the prefect server 
+Start the prefect server and configure prefect to communicate with the server
 ```bash
-prefect server start
-```
-Configure prefect to communicate with the server
-```bash
-prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api
+export PREFECT_UI_API_URL=$(echo $VSCODE_PROXY_URI | sed 's/{{port}}/4200/')api
+prefect config set PREFECT_API_URL=http://0.0.0.0:4200/api
+prefect server start --host 0.0.0.0
 ```
 ---
 

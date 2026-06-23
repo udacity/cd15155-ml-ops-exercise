@@ -15,11 +15,12 @@ Or start them manually in three separate terminals:
 
 ```bash
 # Terminal 1 — MLflow tracking server
-mlflow server --host 127.0.0.1 --port 5000
+mlflow server --port 5000 --host 0.0.0.0 --allowed-hosts "*"
 
 # Terminal 2 — Prefect server
+export PREFECT_UI_API_URL=$(echo $VSCODE_PROXY_URI | sed 's/{{port}}/4200/')api
 prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api
-prefect server start
+prefect server start --host 0.0.0.0 
 
 # Terminal 3 — Prefect worker
 python -m prefect worker start --pool default

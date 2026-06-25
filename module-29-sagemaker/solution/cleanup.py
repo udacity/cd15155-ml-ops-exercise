@@ -12,7 +12,7 @@ from sagemaker.core.helper.session_helper import Session
 
 PIPELINE_NAME = "FinBERTPipeline"
 MODEL_PACKAGE_GROUP = "FinBERTSentimentClassifiers"
-ENDPOINT_NAME = "finbert-sentiment-endpoint"
+ENDPOINT_NAME = "finbert-solution-endpoint"
 MODEL_NAME = "finbert-from-registry"
 S3_PREFIX = "finbert/"
 
@@ -53,9 +53,9 @@ def delete_endpoint(region):
 
 
 def delete_model_registry(region):
+    import time
     sm = boto3.client("sagemaker", region_name=region)
 
-    # Delete all model packages in the group
     try:
         paginator = sm.get_paginator("list_model_packages")
         for page in paginator.paginate(ModelPackageGroupName=MODEL_PACKAGE_GROUP):
@@ -63,6 +63,7 @@ def delete_model_registry(region):
                 sm.delete_model_package(ModelPackageName=pkg["ModelPackageArn"])
                 print(f"Model package deleted: {pkg['ModelPackageArn']}")
 
+        time.sleep(10)
         sm.delete_model_package_group(ModelPackageGroupName=MODEL_PACKAGE_GROUP)
         print(f"Model package group '{MODEL_PACKAGE_GROUP}' deleted.")
     except Exception as e:
@@ -78,11 +79,56 @@ def delete_pipeline(region):
         print(f"Pipeline deletion skipped: {e}")
 
 
+def delete_domain(region):
+    sm = boto3.client("sagemaker", region_name=region)
+    try:
+        domains = sm.list_domains()["Domains"]
+        if not domains:
+            print("No SageMaker domains found.")
+            return
+
+        for domain in domains:
+            domain_id = domain["DomainId"]
+            print(f"Cleaning up domain: {domain_id}...")
+
+            # Delete all apps in all user profiles
+            profiles = sm.list_user_profiles(DomainIdEquals=domain_id)["UserProfiles"]
+            for profile in profiles:
+                username = profile["UserProfileName"]
+                apps = sm.list_apps(
+                    DomainIdEquals=domain_id,
+                    UserProfileNameEquals=username,
+                )["Apps"]
+                for app in apps:
+                    if app["Status"] not in ("Deleted", "Deleting"):
+                        sm.delete_app(
+                            DomainId=domain_id,
+                            UserProfileName=username,
+                            AppType=app["AppType"],
+                            AppName=app["AppName"],
+                        )
+                        print(f"  App deleted: {app['AppName']}")
+
+            # Delete all user profiles
+            for profile in profiles:
+                sm.delete_user_profile(
+                    DomainId=domain_id,
+                    UserProfileName=profile["UserProfileName"],
+                )
+                print(f"  User profile deleted: {profile['UserProfileName']}")
+
+            # Delete the domain
+            sm.delete_domain(DomainId=domain_id, RetentionPolicy={"HomeEfsFileSystem": "Delete"})
+            print(f"Domain '{domain_id}' deleted.")
+    except Exception as e:
+        print(f"Domain deletion skipped: {e}")
+
+
 def delete_s3_data(bucket, region):
     s3 = boto3.resource("s3", region_name=region)
     try:
         bucket_obj = s3.Bucket(bucket)
-        deleted = bucket_obj.objects.filter(Prefix=S3_PREFIX).delete()
+        bucket_obj.objects.filter(Prefix=S3_PREFIX).delete()
         print(f"S3 data under s3://{bucket}/{S3_PREFIX} deleted.")
     except Exception as e:
         print(f"S3 cleanup skipped: {e}")
@@ -106,6 +152,7 @@ def main():
     delete_model_registry(region)
     delete_pipeline(region)
     delete_s3_data(bucket, region)
+    delete_domain(region)
 
     print("Cleanup complete.")
 

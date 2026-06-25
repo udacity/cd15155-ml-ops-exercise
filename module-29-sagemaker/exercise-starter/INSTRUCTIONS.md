@@ -33,17 +33,19 @@ Read more: https://docs.aws.amazon.com/sagemaker/latest/dg/pipelines.html
 
 ## 2. Complete `deploy.py`
 
-Once the pipeline completes and the model is registered, deploy it to a real-time endpoint. Complete the TODOs to:
+Once the pipeline completes, go to **SageMaker > Model Registry** in the AWS Console, find the latest model version under the `FinBERTSentimentClassifiers` group, and **approve** it. Then copy the model package ARN and run:
 
-- Build and deploy the model to a SageMaker managed endpoint
+```bash
+python deploy.py --model-package-arn <arn> --role <ARN>
+```
+
+Complete the TODOs to:
+
+- Load the approved model from the Model Registry and deploy it to a SageMaker real-time endpoint
 - Configure target-tracking auto-scaling (1 to 4 instances, target 1000 invocations/instance/min)
 - Send test requests to verify the endpoint returns predictions
 
-```bash
-python deploy.py --model-s3 s3://<bucket>/finbert/output/<job>/output/model.tar.gz
-```
-
-Read more: https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints.html
+Read more: https://docs.aws.amazon.com/sagemaker/latest/dg/model-registry-deploy.html
 
 ---
 
@@ -68,5 +70,6 @@ The script deletes resources in this order:
 4. Model packages and model package group
 5. SageMaker pipeline
 6. S3 data (`finbert/` prefix in your default bucket)
+7. SageMaker Studio apps, user profiles, and domain (including EFS storage)
 
 > **Important:** Always run the cleanup script at the end of the exercise to avoid incurring AWS charges.

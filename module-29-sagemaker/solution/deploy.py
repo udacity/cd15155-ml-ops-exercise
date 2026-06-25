@@ -13,7 +13,7 @@ from sagemaker.core.helper.session_helper import Session, get_execution_role
 from sagemaker.core.resources import ModelPackage
 from sagemaker.serve import ModelBuilder
 
-ENDPOINT_NAME = "finbert-sentiment-endpoint"
+ENDPOINT_NAME = "finbert-solution-endpoint"
 
 
 def deploy_endpoint(role: str, model_package_arn: str, session: Session):

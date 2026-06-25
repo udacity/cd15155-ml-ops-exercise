@@ -22,7 +22,7 @@ if os.path.exists("/opt/ml/processing"):
 from datasets import load_dataset
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--output-dir", default=os.environ.get("SM_OUTPUT_DIR", "processing/output"))
+parser.add_argument("--output-dir", default="/opt/ml/processing/output" if os.path.exists("/opt/ml/processing") else "processing/output")
 args = parser.parse_args()
 
 OUTPUT_BASE = args.output_dir

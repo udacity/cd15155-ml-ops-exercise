@@ -43,7 +43,7 @@ def make_collate_fn(pipe, label_names):
 
 
 def build_vision_data(hf_split, pipe, label_names):
-    dataset = BeansDataset(load_dataset("beans", split=hf_split))
+    dataset = BeansDataset(load_dataset("AI-Lab-Makerere/beans", split=hf_split))
     label_map = {i: lbl for i, lbl in enumerate(label_names)}
     loader = DataLoader(
         dataset,
@@ -57,7 +57,7 @@ def main():
     print(f"Loading model: {MODEL_NAME}...")
     pipe = pipeline("image-classification", model=MODEL_NAME)
 
-    dataset = load_dataset("beans", split="validation")
+    dataset = load_dataset("AI-Lab-Makerere/beans", split="validation")
     label_names = dataset.features["labels"].names
 
     print("Building VisionData...")

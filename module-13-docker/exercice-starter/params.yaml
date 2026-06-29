@@ -3,7 +3,7 @@ model:
   task: image-classification
 
 dataset:
-  name: beans
+  name: AI-Lab-Makerere/beans
   split: test
 
 mlflow:
@@ -18,4 +18,4 @@ registry:
   tags:
     framework: transformers
     task: image-classification
-    dataset: beans
+    dataset: AI-Lab-Makerere/beans

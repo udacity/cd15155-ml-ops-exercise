@@ -17,7 +17,7 @@ mlflow:
   tags:
     framework: transformers
     task: image-classification
-    dataset: beans
+    dataset: AI-Lab-Makerere/beans
 
 registry:
   model_name: beans-disease-classifier
@@ -26,4 +26,4 @@ registry:
   tags:
     framework: transformers
     task: image-classification
-    dataset: beans
+    dataset: AI-Lab-Makerere/beans

@@ -1,7 +1,7 @@
 from datasets import load_dataset
 import requests
 
-ds = load_dataset("beans", split="test")
+ds = load_dataset("AI-Lab-Makerere/beans", split="test")
 
 for i, item in enumerate(ds.select(range(30))):
     img = item["image"]

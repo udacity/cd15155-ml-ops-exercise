@@ -22,4 +22,4 @@ ENV MLFLOW_MODEL_ALIAS="production"
 EXPOSE 8000
 
 #TODO Define the command to run the FastAPI app using uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--root-path", "/proxy/8000"]

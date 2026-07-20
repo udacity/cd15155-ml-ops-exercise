@@ -23,6 +23,11 @@ aws ecs delete-service \
   --force \
   --region $AWS_REGION || true
 
+echo "Waiting for service to become inactive..."
+aws ecs wait services-inactive \
+  --cluster $CLUSTER --services $SERVICE \
+  --region $AWS_REGION || true
+
 # Deregister all task definition revisions
 echo "Deregistering task definitions..."
 TASK_DEFS=$(aws ecs list-task-definitions \

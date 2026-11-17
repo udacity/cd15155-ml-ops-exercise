@@ -9,7 +9,7 @@ Start three services in separate terminals before running anything:
 
 ```bash
 # Terminal 1 — MLflow tracking server
-mlflow server --host 127.0.0.1 --port 5000
+mlflow server --port 5000 --host 0.0.0.0 --allowed-hosts "*"
 
 # Terminal 2 — Prefect server
 prefect server start
@@ -75,6 +75,11 @@ In a separate terminal, run `add_data.py` to append the next data chunk and fire
 python add_data.py
 ```
 
-Prefect will automatically start a flow run. Monitor it in the Prefect UI at [http://localhost:4200](http://localhost:4200) and verify the MLflow run at [http://localhost:5000](http://localhost:5000).
+Prefect will automatically start a flow run. Monitor it in the Prefect UI and verify the MLflow run in the MLflow UI. Open each in a new browser tab, at the addresses these commands print:
+
+```bash
+echo $VSCODE_PROXY_URI | sed 's/{{port}}/4200/'
+echo $VSCODE_PROXY_URI | sed 's/{{port}}/5000/'
+```
 
 Run `add_data.py` multiple times to simulate continuous data arrival and observe how the model is retrained and compared each time.

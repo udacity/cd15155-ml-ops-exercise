@@ -13,7 +13,7 @@ In this exercise, you are given a pre-trained Visual Transformer model fine-tune
 Start the MLflow tracking server:
 
 ```bash
-mlflow server --host 127.0.0.1 --port 5000
+mlflow server --port 5000 --host 0.0.0.0 --allowed-hosts "*"
 ```
 
 ---
@@ -31,7 +31,13 @@ You need to complete two steps inside the active run:
 python evaluate.py
 ```
 
-Open the MLflow UI at [http://localhost:5000](http://localhost:5000) and verify:
+To open the MLflow UI, run this and open the address it prints in a new browser tab:
+
+```bash
+echo $VSCODE_PROXY_URI | sed 's/{{port}}/5000/'
+```
+
+In the MLflow UI, verify:
 - The `beans-vit-classification` experiment contains a run with `accuracy` logged
 - The Model Registry contains a new model version with the `production` alias assigned
 

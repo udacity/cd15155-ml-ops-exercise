@@ -9,7 +9,7 @@ In this exercise you will instrument a FinBERT fine-tuning script with MLflow tr
 Before running any training, start the MLflow server locally.
 
 ```bash
-mlflow server --host 127.0.0.1 --port 5000
+mlflow server --port 5000 --host 0.0.0.0 --allowed-hosts "*"
 ```
 
 Leave this running in a separate terminal. All runs will be logged to `http://127.0.0.1:5000`, which matches the `tracking_uri` in `params.yaml`.
@@ -59,10 +59,10 @@ Each run is recorded separately in the MLflow experiment with its own parameters
 
 ## 5. Compare runs in the MLflow UI
 
-Open the MLflow UI in your browser:
+Open the MLflow UI in a new browser tab, at the address this command prints:
 
-```
-http://127.0.0.1:5000
+```bash
+echo $VSCODE_PROXY_URI | sed 's/{{port}}/5000/'
 ```
 
 Navigate to the `finbert-financial-sentiment` experiment. Select multiple runs and use the **Compare** view to plot metrics side-by-side across runs. This lets you visually identify which hyperparameter combination yields the best validation accuracy.
